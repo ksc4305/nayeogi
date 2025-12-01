@@ -21,13 +21,12 @@ USE `trip_dummy` ;
 -- Table `trip_dummy`.`sidos`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `trip_dummy`.`sidos` (
-  `no` INT NOT NULL AUTO_INCREMENT COMMENT '시도번호(PK)',
+  `id` INT NOT NULL,
   `sido_code` INT NOT NULL COMMENT '시도코드',
   `sido_name` VARCHAR(20) NULL DEFAULT NULL COMMENT '시도명',
-  PRIMARY KEY (`no`),
+  PRIMARY KEY (`id`),
   UNIQUE INDEX `sido_code_UNIQUE` (`sido_code` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 32
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -36,18 +35,17 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `trip_dummy`.`guguns`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `trip_dummy`.`guguns` (
-  `no` INT NOT NULL AUTO_INCREMENT,
+  `id` INT NOT NULL,
   `sido_code` INT NOT NULL,
   `gugun_code` INT NOT NULL,
   `gugun_name` VARCHAR(20) NULL DEFAULT NULL,
-  PRIMARY KEY (`no`),
+  PRIMARY KEY (`id`),
   INDEX `guguns_sido_to_sidos_code_fk_idx` (`sido_code` ASC) VISIBLE,
   INDEX `gugun_code_idx` (`gugun_code` ASC) VISIBLE,
   CONSTRAINT `guguns_sido_to_sidos_code_fk`
     FOREIGN KEY (`sido_code`)
     REFERENCES `trip_dummy`.`sidos` (`sido_code`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 256
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -68,7 +66,7 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `trip_dummy`.`attractions`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `trip_dummy`.`attractions` (
-  `no` INT NOT NULL AUTO_INCREMENT,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `content_id` INT NOT NULL,
   `title` VARCHAR(500) NULL DEFAULT NULL,
   `content_type_id` INT NULL DEFAULT NULL,
@@ -84,7 +82,7 @@ CREATE TABLE IF NOT EXISTS `trip_dummy`.`attractions` (
   `addr2` VARCHAR(100) NULL DEFAULT NULL,
   `homepage` VARCHAR(1000) NULL DEFAULT NULL,
   `overview` VARCHAR(10000) NULL DEFAULT NULL,
-  PRIMARY KEY (`no`),
+  PRIMARY KEY (`id`),
   UNIQUE INDEX `attractions_content_id_UNIQUE` (`content_id` ASC) VISIBLE,
   INDEX `attractions_typeid_to_types_typeid_fk_idx` (`content_type_id` ASC) VISIBLE,
   INDEX `attractions_sido_to_sidos_code_fk_idx` (`area_code` ASC) VISIBLE,
@@ -108,9 +106,9 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `trip_dummy`.`feature_codes`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `trip_dummy`.`feature_codes` (
-  `code` INT NOT NULL,
-  `feature_name` VARCHAR(100) NOT NULL COMMENT '특징 이름',
-  PRIMARY KEY (`code`))
+  `id` INT NOT NULL,
+  `name` VARCHAR(100) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -121,21 +119,21 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `trip_dummy`.`attraction_features` (
   `id` INT NOT NULL,
-  `attraction_no` INT NOT NULL COMMENT '관광지 번호',
-  `feature_code` INT NULL DEFAULT NULL,
+  `attraction_id` INT NOT NULL COMMENT '관광지 번호',
+  `feature_id` INT NULL DEFAULT NULL,
   `vote` INT NULL DEFAULT NULL,
-  `score` INT NULL DEFAULT NULL,
+  `score` DECIMAL(3,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`),
-  INDEX `idx_attraction_no` (`attraction_no` ASC) VISIBLE,
-  INDEX `fk_attraction_features_attraction` (`feature_code` ASC) VISIBLE,
+  INDEX `idx_attraction_no` (`attraction_id` ASC) VISIBLE,
+  INDEX `fk_attraction_features_attraction` (`feature_id` ASC) VISIBLE,
   CONSTRAINT `fk_attraction_features_attractions`
-    FOREIGN KEY (`attraction_no`)
-    REFERENCES `trip_dummy`.`attractions` (`no`)
+    FOREIGN KEY (`attraction_id`)
+    REFERENCES `trip_dummy`.`attractions` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `fk_attraction_features_feature_codes`
-    FOREIGN KEY (`feature_code`)
-    REFERENCES `trip_dummy`.`feature_codes` (`code`)
+    FOREIGN KEY (`feature_id`)
+    REFERENCES `trip_dummy`.`feature_codes` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
@@ -257,15 +255,16 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `trip_dummy`.`plan_details` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `plan_id` INT NOT NULL,
-  `attraction_no` INT NOT NULL,
+  `attraction_id` INT NOT NULL,
   `plan_date` INT NULL DEFAULT '1',
   `sequence` INT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   INDEX `fk_plan_details_plan_idx` (`plan_id` ASC) VISIBLE,
-  INDEX `fk_plan_details_attraction_idx` (`attraction_no` ASC) VISIBLE,
+  INDEX `fk_plan_details_attraction_idx` (`attraction_id` ASC) VISIBLE,
   CONSTRAINT `fk_plan_details_attraction`
-    FOREIGN KEY (`attraction_no`)
-    REFERENCES `trip_dummy`.`attractions` (`no`),
+    FOREIGN KEY (`attraction_id`)
+    REFERENCES `trip_dummy`.`attractions` (`id`)
+    ON DELETE CASCADE,
   CONSTRAINT `fk_plan_details_plan`
     FOREIGN KEY (`plan_id`)
     REFERENCES `trip_dummy`.`plans` (`id`)
@@ -282,17 +281,17 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `trip_dummy`.`story_pages` (
   `id` INT NOT NULL,
   `story_id` INT NOT NULL,
-  `content_id` INT NOT NULL,
+  `attraction_id` INT NOT NULL,
   `image_path` VARCHAR(300) NULL DEFAULT NULL,
   `user_memo` TEXT NULL DEFAULT NULL,
   `ai_generated_text` TEXT NULL DEFAULT NULL,
   `page_order` INT NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_story_pages_story_idx` (`story_id` ASC) VISIBLE,
-  INDEX `fk_story_pages_attraction_idx` (`content_id` ASC) VISIBLE,
+  INDEX `fk_story_pages_attraction_idx` (`attraction_id` ASC) VISIBLE,
   CONSTRAINT `fk_story_pages_attraction`
-    FOREIGN KEY (`content_id`)
-    REFERENCES `trip_dummy`.`attractions` (`content_id`),
+    FOREIGN KEY (`attraction_id`)
+    REFERENCES `trip_dummy`.`attractions` (`id`),
   CONSTRAINT `fk_story_pages_story`
     FOREIGN KEY (`story_id`)
     REFERENCES `trip_dummy`.`storybooks` (`id`)
@@ -306,27 +305,38 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `trip_dummy`.`survey`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `trip_dummy`.`survey` (
-  `no` INT NOT NULL COMMENT '설문조사 번호',
-  `question` VARCHAR(100) NOT NULL COMMENT '문항',
-  `type` VARCHAR(10) NOT NULL COMMENT '임시로 넣어둔 컬럼',
-  PRIMARY KEY (`no`))
+  `id` INT NOT NULL COMMENT '문항 ID',
+  `question` VARCHAR(100) NOT NULL COMMENT '질문 내용',
+  `type` VARCHAR(10) NOT NULL COMMENT '대분류,중분류 구분',
+  `parent_id` INT NULL DEFAULT NULL COMMENT '부모 문항 ID',
+  PRIMARY KEY (`id`),
+  INDEX `fk_survey_parent` (`parent_id` ASC) VISIBLE,
+  CONSTRAINT `fk_survey_parent`
+    FOREIGN KEY (`parent_id`)
+    REFERENCES `trip_dummy`.`survey` (`id`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
--- Table `trip_dummy`.`survey_options`
+-- Table `trip_dummy`.`survey_feature_weight`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `trip_dummy`.`survey_options` (
-  `survey_no` INT NOT NULL COMMENT '설문조사문항 번호',
-  `option_order` INT NOT NULL COMMENT '설문조사 보기 번호',
-  `option` VARCHAR(100) NOT NULL COMMENT '보기 문항',
-  PRIMARY KEY (`survey_no`, `option_order`),
-  INDEX `fk_survey_options_survey_idx` (`survey_no` ASC) VISIBLE,
-  CONSTRAINT `fk_survey_options_survey`
-    FOREIGN KEY (`survey_no`)
-    REFERENCES `trip_dummy`.`survey` (`no`))
+CREATE TABLE IF NOT EXISTS `trip_dummy`.`survey_feature_weight` (
+  `survey_id` INT NOT NULL COMMENT '설문 문항 ID',
+  `attraction_features_id` INT NOT NULL COMMENT '관광지-특징 매핑 ID',
+  `weight` DECIMAL(6,3) NOT NULL DEFAULT '0.000' COMMENT '가중치',
+  PRIMARY KEY (`survey_id`, `attraction_features_id`),
+  INDEX `fk_sfw_attraction_features` (`attraction_features_id` ASC) VISIBLE,
+  CONSTRAINT `fk_sfw_attraction_features`
+    FOREIGN KEY (`attraction_features_id`)
+    REFERENCES `trip_dummy`.`attraction_features` (`id`)
+    ON DELETE CASCADE,
+  CONSTRAINT `fk_sfw_survey`
+    FOREIGN KEY (`survey_id`)
+    REFERENCES `trip_dummy`.`survey` (`id`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
