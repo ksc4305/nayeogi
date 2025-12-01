@@ -1,0 +1,26 @@
+﻿담당자,BE,FE,Auth,기능,카테고리,사용자,Method,URL,param,설명,기타
+성환 박,시작 전,시작 전,Yes,로그아웃,"유저, 인증",유저,POST,/api/v1/members/logout,,세션 만료 및 쿠키 삭제,
+성환 박,시작 전,시작 전,No,로그인,"유저, 인증",유저,POST,/api/v1/members/login,,세션 로그인 (JSESSIONID 쿠키 발급),
+성환 박,시작 전,시작 전,Yes,회원 탈퇴,유저,유저,DELETE,/api/v1/members,,회원 정보를 삭제하고 로그아웃 처리합니다.,
+성환 박,시작 전,시작 전,Yes,회원 정보 수정,유저,유저,PUT,/api/v1/members,,"비밀번호, 이름 등 정보를 수정합니다.",
+성환 박,시작 전,시작 전,No,이메일 중복 검사,유저,유저,GET,/api/v1/members/availability?email={email},,회원가입 시 이메일 중복 여부를 확인합니다.,
+성환 박,시작 전,시작 전,Yes,회원 정보 조회,유저,유저,GET,/api/v1/members/me,,로그인된 사용자(세션)의 정보를 조회합니다.,
+성환 박,시작 전,시작 전,No,회원가입,유저,유저,POST,/api/v1/members/join,,신규 회원 가입을 처리합니다.,비밀번호 암호화(BCrypt) 필수
+이주형,시작 전,시작 전,Yes,관광지 검색,검색,유저,GET,/api/v1/attractions/search,"keyword, sidoCode, contentTypeId","키워드, 지역, 유형으로 관광지 정보를 검색합니다. (페이징 지원)",
+이주형,시작 전,시작 전,Yes,설문 기반 맞춤 여행지 추천,추천,유저,POST,/api/v1/recommendations,,설문 결과(벡터)를 분석하여 맞춤 관광지를 추천합니다.,
+이주형,시작 전,시작 전,Yes,테마별 상세 질문 조회,추천,유저,GET,/api/v1/recommendations/questions/{theme},,선택한 테마(Q3)에 맞는 상세 질문지(Q4)를 반환합니다.,
+이주형,시작 전,시작 전,Yes,설문 기초 옵션 조회,추천,유저,GET,/api/v1/recommendations/options,,"설문 화면(Q1~Q3)에 보여줄 선택지(지역, 동행, 테마)를 반환합니다.",
+이주형,시작 전,시작 전,Yes,여행 계획 삭제,계획,유저,DELETE,/api/v1/plans/{planId},,특정 여행 계획을 삭제합니다.,
+이주형,시작 전,시작 전,Yes,여행 계획 수정,계획,유저,PUT,/api/v1/plans/{planId},,기존 계획의 경로를 수정하여 덮어씁니다.,
+이주형,시작 전,시작 전,Yes,여행 계획 상세 조회,계획,유저,GET,/api/v1/plans/{planId},,특정 여행 계획의 전체 경로와 정보를 조회합니다.,
+이주형,시작 전,시작 전,Yes,내 여행 계획 목록,계획,유저,GET,/api/v1/plans,,내가 작성한 여행 계획 리스트를 최신순으로 조회합니다.,
+이주형,시작 전,시작 전,Yes,여행 계획 생성 및 저장,계획,유저,POST,/api/v1/plans,,작성된 계획(정보+경로)을 DB에 일괄 저장합니다.,
+강산천,시작 전,시작 전,Yes,AI 이미지 스타일 변환,스토리,유저,POST,/api/v1/images/transformations,,"사용자가 업로드한 사진을 지정된 화풍(애니메이션, 수채화 등)으로 변환하여 새로운 이미지 URL을 반환합니다.",AI 처리 시간(약 5~10초) 소요
+강산천,시작 전,시작 전,Yes,스토리북 수정,스토리,유저,PUT,/api/v1/stories/{storyId},,이미 저장된 스토리북의 제목이나 특정 페이지의 내용(글/사진)을 수정하여 덮어씁니다.,
+강산천,시작 전,시작 전,Yes,스토리북 삭제,스토리,유저,DELETE,/api/v1/stories/{storyId},,스토리북을 영구 삭제합니다.,
+강산천,시작 전,시작 전,Yes,공개 여부 변경,스토리,유저,PATCH,/api/v1/stories/{storyId}/visibility,,스토리북의 공개 상태(Public/Private)를 수정합니다.,
+강산천,시작 전,시작 전,Yes,스토리북 상세 조회,스토리,유저,GET,/api/v1/stories/{storyId},,스토리북의 상세 내용(페이지별 글/사진)을 조회합니다.,
+강산천,시작 전,시작 전,Yes,내 스토리북 목록,스토리,유저,GET,/api/v1/stories,,내 스토리북 리스트를 조회합니다. (전체 또는 특정 계획별 필터링),
+강산천,시작 전,시작 전,Yes,AI 스토리 초안 생성,스토리,유저,POST,/api/v1/story-previews,,(AI) 계획과 메모를 분석하여 저장 전 스토리 초안(Preview)을 생성합니다.(표지 생성 옵션 포함),
+강산천,시작 전,시작 전,Yes,스토리북 저장,스토리,유저,POST,/api/v1/stories,,완성된 스토리북을 생성(저장)합니다. (N차 창작 가능),
+강산천,시작 전,시작 전,Yes,이미지 파일 업로드,공통,유저,POST,/api/v1/files/upload,,사용자의 로컬 이미지 파일을 서버에 업로드하고 접근 가능한 URL을 반환합니다.,multipart/form-data 필수
