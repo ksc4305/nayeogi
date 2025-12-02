@@ -39,8 +39,8 @@ public class LocalImageService implements ImageService {
         File dest = new File(uploadPath, storedFilename);
         file.transferTo(dest);
 
-        // 클라이언트가 접근할 수 있는 URL을 반환해야 하지만, 여기서는 저장된 파일 경로를 반환합니다.
-        // 실제로는 /images/{filename} 같은 엔드포인트를 만들어 정적 리소스를 제공해야 합니다.
-        return new ImageUploadResponse(dest.getAbsolutePath());
+        ImageUploadResponse response = new ImageUploadResponse();
+        response.setId(storedFilename.hashCode());
+        return response;
     }
 }

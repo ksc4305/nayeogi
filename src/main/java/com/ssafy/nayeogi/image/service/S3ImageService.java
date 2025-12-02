@@ -47,6 +47,8 @@ public class S3ImageService implements ImageService {
         // return new ImageUploadResponse(fileUrl);
 
         System.out.println("S3에 이미지 업로드 (구현 필요)");
-        return new ImageUploadResponse("s3-upload-url-placeholder");
+        ImageUploadResponse response = new ImageUploadResponse();
+        response.setId(file.getOriginalFilename() != null ? file.getOriginalFilename().hashCode() : 0);
+        return response;
     }
 }
