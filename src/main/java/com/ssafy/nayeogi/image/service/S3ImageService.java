@@ -61,13 +61,12 @@ public class S3ImageService implements ImageService {
             String decodedKey = URLDecoder.decode(key, StandardCharsets.UTF_8);
             s3Template.deleteObject(bucketName, decodedKey);
         } catch (Exception e) {
-            // 삭제 실패해도 에러를 던지지 않고 로그만 남기는 게 좋을 수 있음 (사용자 경험상)
             // log.error("S3 파일 삭제 실패: {}", e.getMessage());
             throw new RuntimeException("파일 삭제 실패", e);
         }
     }
 
-    // URL에서 파일명만 쏙 빼내는 헬퍼 메서드
+    // URL에서 파일명만 쏙
     private String extractKeyFromUrl(String imageUrl) {
         try {
             // "amazonaws.com/" 뒷부분을 찾아서 자름
