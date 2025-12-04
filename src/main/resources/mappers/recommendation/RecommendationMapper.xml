@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ssafy.nayeogi.recommendation.mapper.RecommendationMapper">
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
+<mapper namespace="com.ssafy.nayeogi.recommendation.model.dao.RecommendationDao">
+
+    <!-- survey_score 매핑 제거 -->
     <resultMap id="RecommendationResultMap"
-               type="com.ssafy.nayeogi.recommendation.dao.Recommendation"
+               type="com.ssafy.nayeogi.recommendation.model.dto.Recommendation"
                autoMapping="true">
+
         <id column="id" property="id"/>
         <result column="content_id" property="content_id"/>
         <result column="title" property="title"/>
@@ -22,10 +26,15 @@
         <result column="addr2" property="addr2"/>
         <result column="homepage" property="homepage"/>
         <result column="overview" property="overview"/>
-        <result column="survey_score" property="survey_score"/>
+
+        <!-- 주의: survey_score 매핑은 제거함 -->
+        <!-- <result column="survey_score" property="survey_score"/> -->
     </resultMap>
 
-    <select id="selectRecommendations" resultMap="RecommendationResultMap">
+
+    <select id="selectRecommendations"
+            resultMap="RecommendationResultMap">
+
         SELECT
             a.id,
             a.content_id,
@@ -52,19 +61,30 @@
             FROM attraction_features AS af
             LEFT JOIN survey_feature_weight AS sfw
                 ON sfw.attraction_features_id = af.id
-                <choose>
-                    <when test="svdIds != null and svdIds.size > 0">
-                        AND sfw.survey_id IN
-                        <foreach collection="svdIds" item="id" open="(" separator="," close=")">
-                            #{id}
-                        </foreach>
-                    </when>
-                    <otherwise>
-                        AND 1 = 0
-                    </otherwise>
-                </choose>
+            <choose>
+                <when test="svdIds != null and svdIds.size() > 0">
+                    AND sfw.survey_id IN
+                    <foreach collection="svdIds"
+                             item="id"
+                             open="("
+                             separator=","
+                             close=")">
+                        #{id}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND 1 = 0
+                </otherwise>
+            </choose>
+
             GROUP BY af.attraction_id
-        ) AS score_summary ON score_summary.attraction_id = a.id
-        ORDER BY survey_score DESC, a.id ASC
+        ) AS score_summary
+            ON score_summary.attraction_id = a.id
+
+        ORDER BY
+            score_summary.survey_score DESC,
+            a.id ASC
+
     </select>
+
 </mapper>

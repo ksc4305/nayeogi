@@ -1,4 +1,4 @@
-package com.ssafy.nayeogi.recommendation.dto;
+package com.ssafy.nayeogi.recommendation.model.dto;
 
 import java.util.Collections;
 import java.util.List;

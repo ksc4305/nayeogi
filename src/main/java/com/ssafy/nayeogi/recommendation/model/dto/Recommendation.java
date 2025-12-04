@@ -1,11 +1,14 @@
-package com.ssafy.nayeogi.recommendation.dao;
+package com.ssafy.nayeogi.recommendation.model.dto;
 
 import java.math.BigDecimal;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Recommendation {
 
     private Integer id;
@@ -24,5 +27,4 @@ public class Recommendation {
     private String addr2;
     private String homepage;
     private String overview;
-    private BigDecimal survey_score;
 }
