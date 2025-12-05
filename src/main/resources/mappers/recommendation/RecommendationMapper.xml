@@ -7,7 +7,7 @@
 
     <!-- survey_score 매핑 제거 -->
     <resultMap id="RecommendationResultMap"
-               type="com.ssafy.nayeogi.recommendation.model.dto.Recommendation"
+               type="Recommendation"
                autoMapping="true">
 
         <id column="id" property="id"/>
