@@ -6,7 +6,7 @@
 	MemberMapper.java 인터페이스와 매핑되는 XML 파일입니다.
 	namespace는 매퍼 인터페이스의 전체 경로와 정확히 일치해야 합니다.
 -->
-<mapper namespace="com.ssafy.nayeogi.member.model.dao.MemberMapper">
+<mapper namespace="com.ssafy.nayeogi.member.model.dao.MemberDao">
 
 	<!-- 
 		회원가입을 위한 INSERT 쿼리입니다.
@@ -26,5 +26,21 @@
 		FROM members 
 		WHERE id = #{userId}
 	</select>
+	
+	<!-- 
+		로그인 확인해서 전부다 반
+	 -->
+	<select id="memberInfo" parameterType="string" resultType="com.ssafy.nayeogi.member.model.dto.MemberDto">
+		SELECT 
+			id as userId, 
+			name as userName, 
+			pw as userPassword, 
+			email, 
+			join_date as joinDate,
+			role  <!-- 이거 꼭 추가해야 합니다! -->
+		FROM members
+		WHERE id = #{userId}
+	</select>
+	
 
 </mapper>
