@@ -42,3 +42,5 @@ bin/
 *.iml
 *.log
 .DS_Store
+AGENTS.md
+/src/main/resources/application.properties

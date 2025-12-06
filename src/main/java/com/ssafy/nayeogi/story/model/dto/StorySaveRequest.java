@@ -1,4 +1,4 @@
-package com.ssafy.nayeogi.story.dto;
+package com.ssafy.nayeogi.story.model.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,7 @@
-package com.ssafy.nayeogi.recommendation.dto;
+package com.ssafy.nayeogi.recommendation.model.dto;
 
-import com.ssafy.nayeogi.recommendation.dao.Recommendation;
 import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
