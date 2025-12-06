@@ -64,11 +64,7 @@
             <choose>
                 <when test="svdIds != null and svdIds.size() > 0">
                     AND sfw.survey_id IN
-                    <foreach collection="svdIds"
-                             item="id"
-                             open="("
-                             separator=","
-                             close=")">
+                    <foreach collection="svdIds" item="id" open="(" separator="," close=")">
                         #{id}
                     </foreach>
                 </when>
