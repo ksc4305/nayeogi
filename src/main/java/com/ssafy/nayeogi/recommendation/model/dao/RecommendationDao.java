@@ -11,5 +11,5 @@ import com.ssafy.nayeogi.recommendation.model.dto.Recommendation;
 @Mapper
 public interface RecommendationDao {
 
-    List<Recommendation> selectRecommendations(@Param("svdIds") List<Integer> svdIds);
+    List<Recommendation> selectRecommendations(List<Integer> svdIds);
 }
