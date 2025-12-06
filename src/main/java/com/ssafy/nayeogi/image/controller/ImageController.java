@@ -1,12 +1,11 @@
 package com.ssafy.nayeogi.image.controller;
 
-import com.ssafy.nayeogi.common.dto.ErrorResponse;
-import com.ssafy.nayeogi.image.model.dto.ImageUploadResponse;
+import com.ssafy.nayeogi.common.dto.ApiResponse;
+import com.ssafy.nayeogi.image.dto.ImageUploadResponse;
 import com.ssafy.nayeogi.image.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,44 +23,31 @@ public class ImageController {
 
     private final ImageService imageService;
 
+    /**
+     * 이미지 파일 업로드
+     * 에러 처리는 GlobalExceptionHandler에게 위임.
+     */
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadFiles(@RequestPart("files") List<MultipartFile> files) {
-	     try {
-	         List<String> urls = imageService.upload(files);
-	         return ResponseEntity.ok(new ImageUploadResponse(urls));
-	
-	     } catch (Exception e) {
-	         log.error("파일 업로드 실패: ", e);
-	
-	         ErrorResponse errorResponse = new ErrorResponse(
-	             "FILE_UPLOAD_ERROR", 
-	             "파일 업로드 중 오류가 발생했습니다: " + e.getMessage()
-	         );
-	
-	         return ResponseEntity
-	                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                 .body(errorResponse);
-	     }
+    public ResponseEntity<ApiResponse<ImageUploadResponse>> uploadFiles(
+            @RequestPart("files") List<MultipartFile> files
+    ) {
+        // 1. 서비스 호출 (실패하면 서비스에서 throw -> 핸들러가 잡음)
+        List<String> urls = imageService.upload(files);
+        
+        // 2. DTO 생성
+        ImageUploadResponse responseDto = new ImageUploadResponse(urls);
+        
+        // 3. ApiResponse.success()로 감싸서 리턴
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
     
+    /**
+     * 이미지 파일 삭제
+     */
     @DeleteMapping
-    public ResponseEntity<?> deleteFile(@RequestParam("imageUrl") String imageUrl) {
-        try {
-            imageService.delete(imageUrl);
-            
-            return ResponseEntity.ok().build(); 
-
-        } catch (Exception e) {
-            log.error("파일 삭제 실패: ", e);
-
-            ErrorResponse errorResponse = new ErrorResponse(
-                "FILE_DELETE_ERROR",
-                "파일 삭제 중 오류가 발생했습니다: " + e.getMessage()
-            );
-
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(errorResponse);
-        }
+    public ResponseEntity<ApiResponse<Void>> deleteFile(@RequestParam("imageUrl") String imageUrl) {
+        imageService.delete(imageUrl);
+        
+        return ResponseEntity.ok(ApiResponse.success());
     }
 }
