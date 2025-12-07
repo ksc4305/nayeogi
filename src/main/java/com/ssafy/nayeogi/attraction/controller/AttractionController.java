@@ -4,15 +4,20 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.nayeogi.attraction.model.dto.AttractionResponse;
+import com.ssafy.nayeogi.attraction.model.dto.PlanDetailResponse;
+import com.ssafy.nayeogi.attraction.model.dto.PlanSearchResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanCreateRequest;
 import com.ssafy.nayeogi.attraction.model.dto.PlanCreateResponse;
+import com.ssafy.nayeogi.attraction.model.dto.PlanUpdateRequest;
 import com.ssafy.nayeogi.attraction.service.AttractionService;
 
 import lombok.RequiredArgsConstructor;
@@ -35,4 +40,23 @@ public class AttractionController {
 		Integer planId = attractionService.createPlan(request);
 		return ResponseEntity.ok(new PlanCreateResponse(planId));
 	}
+
+	@GetMapping("/plans")
+	public ResponseEntity<List<PlanSearchResponse>> searchPlanList(@RequestParam String memberId) {
+		List<PlanSearchResponse> plans = attractionService.searchPlanList(memberId);
+		return ResponseEntity.ok(plans);
+	}
+
+	@GetMapping("/plans/{planId}")
+	public ResponseEntity<List<PlanDetailResponse>> searchPlanDetails(@PathVariable Integer planId) {
+		List<PlanDetailResponse> details = attractionService.searchPlanDetails(planId);
+		return ResponseEntity.ok(details);
+	}
+
+	@PutMapping("/plans/{planId}")
+	public ResponseEntity<Void> updatePlan(@PathVariable Integer planId, @RequestBody PlanUpdateRequest request) {
+		attractionService.updatePlan(planId, request);
+		return ResponseEntity.noContent().build();
+	}
+
 }
