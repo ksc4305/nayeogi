@@ -3,6 +3,7 @@ package com.ssafy.nayeogi.attraction.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,10 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.nayeogi.attraction.model.dto.AttractionResponse;
+import com.ssafy.nayeogi.attraction.model.dto.PlanCreateRequest;
 import com.ssafy.nayeogi.attraction.model.dto.PlanDetailResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanSearchResponse;
-import com.ssafy.nayeogi.attraction.model.dto.PlanCreateRequest;
-import com.ssafy.nayeogi.attraction.model.dto.PlanCreateResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanUpdateRequest;
 import com.ssafy.nayeogi.attraction.service.AttractionService;
 
@@ -36,9 +36,9 @@ public class AttractionController {
 		return ResponseEntity.ok(attractions);
 	}
 	@PostMapping("/plans")
-	public ResponseEntity<PlanCreateResponse> addPlans(@RequestBody PlanCreateRequest request) {
+	public ResponseEntity<Integer> addPlans(@RequestBody PlanCreateRequest request) {
 		Integer planId = attractionService.createPlan(request);
-		return ResponseEntity.ok(new PlanCreateResponse(planId));
+		return ResponseEntity.ok(planId);
 	}
 
 	@GetMapping("/plans")
@@ -52,11 +52,16 @@ public class AttractionController {
 		List<PlanDetailResponse> details = attractionService.searchPlanDetails(planId);
 		return ResponseEntity.ok(details);
 	}
+	
+	@DeleteMapping("/plans/{planId}")
+	public ResponseEntity<Integer> deletePlan(@PathVariable Integer planId){
+		attractionService.deletePlan(planId);
+		return ResponseEntity.noContent().build();
+	}
 
 	@PutMapping("/plans/{planId}")
 	public ResponseEntity<Void> updatePlan(@PathVariable Integer planId, @RequestBody PlanUpdateRequest request) {
 		attractionService.updatePlan(planId, request);
 		return ResponseEntity.noContent().build();
 	}
-
 }

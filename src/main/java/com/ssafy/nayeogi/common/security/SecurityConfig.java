@@ -17,12 +17,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-//            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()) // 테스트용 전체 경로 허용
-            .authorizeHttpRequests(
-            	auth -> auth
-	        	.requestMatchers("/api/v1/members/join", "/api/v1/members/login").permitAll()
-	          	.anyRequest().authenticated()
-            )
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()) // 테스트용 전체 경로 허용
+//            .authorizeHttpRequests(
+//            	auth -> auth
+//	        	.requestMatchers("/api/v1/members/join", "/api/v1/members/login").permitAll()
+//	          	.anyRequest().authenticated()
+//            )
             .formLogin(AbstractHttpConfigurer::disable) 
             .httpBasic(AbstractHttpConfigurer::disable);
         return http.build();

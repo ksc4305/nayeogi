@@ -49,6 +49,12 @@ public class AttractionServiceImpl implements AttractionService {
 	public List<PlanDetailResponse> searchPlanDetails(Integer planId) {
 		return attractionDao.findPlanDetailsByPlanId(planId);
 	}
+	
+	@Override
+	public int deletePlan(Integer planId) {
+		attractionDao.deletePlanDetails(planId);
+		return attractionDao.deletePlan(planId);
+	}
 
 	@Override
 	public void updatePlan(Integer planId, PlanUpdateRequest request) {
@@ -80,4 +86,6 @@ public class AttractionServiceImpl implements AttractionService {
 		}
 		return details;
 	}
+
+
 }

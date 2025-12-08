@@ -29,4 +29,6 @@ public interface AttractionDao {
 	int updatePlan(@Param("planId") Integer planId, @Param("request") PlanUpdateRequest request);
 
 	int deletePlanDetails(@Param("planId") Integer planId);
+
+	int deletePlan(@Param("planId") Integer planId);
 }

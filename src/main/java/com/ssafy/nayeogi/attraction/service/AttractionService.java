@@ -20,4 +20,6 @@ public interface AttractionService {
 
 	void updatePlan(Integer planId, PlanUpdateRequest request);
 
+	int deletePlan(Integer planId);
+
 }

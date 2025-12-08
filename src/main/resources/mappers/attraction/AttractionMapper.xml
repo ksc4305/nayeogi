@@ -71,6 +71,11 @@
 		DELETE FROM plan_details
 		WHERE plan_id = #{planId}
 	</delete>
+	
+	<delete id="deletePlan" parameterType="int">
+		DELETE FROM plans
+		WHERE id = #{planId}
+	</delete>
 
 	<select id="findPlansByMember" parameterType="string" resultType="PlanSearchResponse">
 		SELECT
