@@ -28,4 +28,5 @@ public class StoryListResponse {
     
     @Schema(description = "공개 여부", example = "true")
     private boolean isPublic;   // storybooks.is_public ('Y'/'N' -> boolean)
+
 }

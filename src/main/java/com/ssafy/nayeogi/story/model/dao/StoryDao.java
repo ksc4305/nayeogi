@@ -69,3 +69,4 @@ public interface StoryDao {
      */
     int updateStoryVisibility(@Param("storyId") int storyId, @Param("isPublic") boolean isPublic);
 }
+

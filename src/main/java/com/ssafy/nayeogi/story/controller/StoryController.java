@@ -117,4 +117,5 @@ public class StoryController {
         
         return ResponseEntity.ok(ApiResponse.success("공개 여부가 변경되었습니다."));
     }
+
 }

@@ -1,4 +1,3 @@
-
 package com.ssafy.nayeogi.common.exception;
 
 import lombok.AllArgsConstructor;

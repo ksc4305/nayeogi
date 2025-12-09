@@ -30,4 +30,5 @@ public class StorySaveRequest {
     
     @Schema(description = "스토리 페이지 목록")
     private List<StoryPageDto> pages;
+
 }

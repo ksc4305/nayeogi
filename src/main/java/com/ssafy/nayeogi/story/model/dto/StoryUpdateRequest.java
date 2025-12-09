@@ -24,4 +24,5 @@ public class StoryUpdateRequest {
     
     @Schema(description = "수정된 페이지 목록 (순서대로 저장됨)")
     private List<StoryPageDto> pages;
+
 }

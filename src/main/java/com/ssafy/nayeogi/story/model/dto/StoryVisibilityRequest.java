@@ -11,4 +11,5 @@ public class StoryVisibilityRequest {
 
     @Schema(description = "변경할 공개 여부 (true: 공개, false: 비공개)", example = "true")
     private boolean isPublic;
+
 }

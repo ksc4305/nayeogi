@@ -12,22 +12,25 @@ import com.ssafy.nayeogi.member.model.dto.MemberDto;
  *
  */
 @Mapper
-public interface MemberMapper {
+public interface MemberDao {
 
 	/**
 	 * 회원 정보를 DB에 삽입 (회원가입)
 	 * @param memberDto 가입할 회원 정보
 	 * @return 삽입된 행의 수
-	 * @throws SQLException DB 에러
 	 */
-	int insertMember(MemberDto memberDto) throws SQLException;
+	int insertMember(MemberDto memberDto);
 	
 	/**
 	 * 아이디 중복 체크
 	 * @param userId 중복 확인할 아이디
 	 * @return 해당 아이디의 개수 (0 또는 1)
-	 * @throws SQLException DB 에러
 	 */
-	int idCheck(String userId) throws SQLException;
+	int idCheck(String userId);
+	
+	/**
+	 * 3. 로그인용 회원 조회
+	 */
+	MemberDto memberInfo(String userId);
 	
 }

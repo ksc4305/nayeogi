@@ -53,4 +53,5 @@ public class StoryDetailResponse {
         @Schema(description = "관광지 ID (TourAPI)", example = "12540")
         private int contentId; // attractions 테이블의 content_id
     }
+
 }

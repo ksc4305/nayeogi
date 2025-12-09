@@ -17,4 +17,5 @@ public class StoryPageDto {
     
     @Schema(description = "본문 내용", example = "내용입니다.")
     private String content; 
+
 }

@@ -129,4 +129,5 @@ public class StoryServiceImpl implements StoryService {
         // 2. 상태 변경
         storyDao.updateStoryVisibility(storyId, isPublic);
     }
+
 }

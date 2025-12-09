@@ -14,4 +14,5 @@ public interface StoryService {
     void modifyStory(int storyId, StoryUpdateRequest request, String memberId);
     void deleteStory(int storyId, String memberId);
     void changeVisibility(int storyId, boolean isPublic, String memberId);
+
 }
