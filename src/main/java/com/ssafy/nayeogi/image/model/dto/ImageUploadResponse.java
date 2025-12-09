@@ -1,4 +1,4 @@
-package com.ssafy.nayeogi.image.dto;
+package com.ssafy.nayeogi.image.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

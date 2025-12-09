@@ -81,4 +81,13 @@ public class S3ImageService implements ImageService {
             throw new IllegalArgumentException("잘못된 이미지 URL입니다.");
         }
     }
+    
+    @Override
+    public String transformImage(String originalUrl, String style) {
+        // TODO: 실제 AI 이미지 변환 API 연동 필요 (예: DALL-E, Stability AI 등)
+        
+        // 현재는 가짜 URL 반환 (MVP)
+        // 실제로는 여기서 외부 API를 호출하고, 받은 이미지를 다시 S3에 저장한 뒤 그 URL을 리턴해야 함.
+        return originalUrl + "_transformed_" + style + ".jpg"; 
+    }
 }

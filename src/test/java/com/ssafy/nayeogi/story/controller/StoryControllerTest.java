@@ -3,6 +3,9 @@ package com.ssafy.nayeogi.story.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.nayeogi.story.model.dto.StoryDetailResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryListResponse;
+import com.ssafy.nayeogi.story.model.dto.StoryPageDetail;
+import com.ssafy.nayeogi.story.model.dto.StoryPreviewRequest;
+import com.ssafy.nayeogi.story.model.dto.StoryPreviewResponse;
 import com.ssafy.nayeogi.story.model.dto.StorySaveRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryUpdateRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryVisibilityRequest;
@@ -128,8 +131,8 @@ class StoryControllerTest {
         mockResponse.setMemberId("ssafy01");
         
         // 페이지 데이터 추가
-        List<StoryDetailResponse.StoryPageDetail> pages = new ArrayList<>();
-        StoryDetailResponse.StoryPageDetail page = new StoryDetailResponse.StoryPageDetail();
+        List<StoryPageDetail> pages = new ArrayList<>();
+        StoryPageDetail page = new StoryPageDetail();
         page.setPageId(1);
         page.setAttractionTitle("해운대");
         pages.add(page);
@@ -195,6 +198,44 @@ class StoryControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("SUCCESS"));
+    }
+    
+    @Test
+    @DisplayName("AI 스토리 초안 생성 테스트 (Mock)")
+    @WithMockUser(username = "ssafy01")
+    void generateStoryPreview_Success() throws Exception {
+        // given
+        StoryPreviewRequest request = new StoryPreviewRequest();
+        request.setPlanId(101);
+        request.setStyle("EMOTIONAL");
+        
+        List<StoryPreviewRequest.PreviewItem> items = new ArrayList<>();
+        StoryPreviewRequest.PreviewItem item = new StoryPreviewRequest.PreviewItem();
+        item.setContentId(12540);
+        item.setUserMemo("바다가 예뻤다.");
+        items.add(item);
+        request.setItems(items);
+
+        // 가짜 응답 데이터 준비
+        StoryPreviewResponse mockResponse = new StoryPreviewResponse();
+        List<StoryPreviewResponse.GeneratedPage> pages = new ArrayList<>();
+        pages.add(new StoryPreviewResponse.GeneratedPage(12540, "해운대", "AI가 써준 감성 글..."));
+        mockResponse.setPages(pages);
+
+        // Service가 호출되면 위 가짜 응답을 리턴하도록 설정 (Stubbing)
+        given(storyService.generateStoryPreview(any(StoryPreviewRequest.class)))
+                .willReturn(mockResponse);
+
+        // when & then
+        mockMvc.perform(post("/api/v1/stories/previews")
+                        .with(csrf()) // 보안 설정 때문에 필요
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.pages[0].title").value("해운대"))
+                .andExpect(jsonPath("$.data.pages[0].aiText").value("AI가 써준 감성 글..."));
     }
 
 }

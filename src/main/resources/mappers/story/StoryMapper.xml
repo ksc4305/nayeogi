@@ -94,7 +94,7 @@
 		<result column="created_date" property="createdDate"/>
 		<result column="is_public" property="isPublic"/>
 		
-		<collection property="pages" ofType="StoryDetailResponse$StoryPageDetail">
+		<collection property="pages" ofType="StoryPageDetail">
 			<id column="page_id" property="pageId"/>
 			<result column="page_order" property="pageOrder"/>
 			<result column="image_path" property="imagePath"/>

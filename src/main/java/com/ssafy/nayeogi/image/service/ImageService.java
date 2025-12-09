@@ -6,4 +6,5 @@ import java.util.List;
 public interface ImageService {
 	List<String> upload(List<MultipartFile> files);
 	void delete(String imageUrl);
+	String transformImage(String originalUrl, String style);
 }

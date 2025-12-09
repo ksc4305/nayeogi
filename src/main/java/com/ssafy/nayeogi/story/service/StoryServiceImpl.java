@@ -5,11 +5,14 @@ import com.ssafy.nayeogi.common.exception.ErrorCode;
 import com.ssafy.nayeogi.story.model.dao.StoryDao;
 import com.ssafy.nayeogi.story.model.dto.StoryDetailResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryListResponse;
+import com.ssafy.nayeogi.story.model.dto.StoryPreviewRequest;
+import com.ssafy.nayeogi.story.model.dto.StoryPreviewResponse;
 import com.ssafy.nayeogi.story.model.dto.StorySaveRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryUpdateRequest;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -128,6 +131,40 @@ public class StoryServiceImpl implements StoryService {
 
         // 2. 상태 변경
         storyDao.updateStoryVisibility(storyId, isPublic);
+    }
+
+
+    @Override
+    public StoryPreviewResponse generateStoryPreview(StoryPreviewRequest request) {
+        // TODO: 추후 실제 OpenAI API 연동 필요 (RestTemplate or WebClient 사용)
+        
+        List<StoryPreviewResponse.GeneratedPage> generatedPages = new ArrayList<>();
+
+        // 가짜 AI 로직: 사용자가 보낸 메모 뒤에 "~~했습니다."를 붙여서 생성
+        for (StoryPreviewRequest.PreviewItem item : request.getItems()) {
+            
+            // 1. 관광지 정보 조회 (장소 이름을 알기 위해)
+            // (AttractionDao가 필요하지만, 일단 임시로 ID를 이름처럼 사용하거나 생략 가능)
+            String placeName = "관광지_" + item.getContentId(); 
+
+            // 2. AI 문체 적용 시뮬레이션
+            String aiText;
+            if ("EMOTIONAL".equalsIgnoreCase(request.getStyle())) {
+                aiText = "감성적인 하루였습니다. " + item.getUserMemo() + " 그 순간의 공기가 기억납니다.";
+            } else if ("FUNNY".equalsIgnoreCase(request.getStyle())) {
+                aiText = "완전 대박! " + item.getUserMemo() + " 진짜 웃겼음 ㅋㅋ";
+            } else {
+                aiText = item.getUserMemo(); // 기본
+            }
+
+            generatedPages.add(new StoryPreviewResponse.GeneratedPage(
+                    item.getContentId(),
+                    placeName,
+                    aiText
+            ));
+        }
+
+        return new StoryPreviewResponse(generatedPages);
     }
 
 }

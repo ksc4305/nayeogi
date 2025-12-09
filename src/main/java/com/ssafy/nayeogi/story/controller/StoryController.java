@@ -3,6 +3,8 @@ package com.ssafy.nayeogi.story.controller;
 import com.ssafy.nayeogi.common.dto.ApiResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryDetailResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryListResponse;
+import com.ssafy.nayeogi.story.model.dto.StoryPreviewRequest;
+import com.ssafy.nayeogi.story.model.dto.StoryPreviewResponse;
 import com.ssafy.nayeogi.story.model.dto.StorySaveRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryUpdateRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryVisibilityRequest;
@@ -116,6 +118,15 @@ public class StoryController {
         storyService.changeVisibility(storyId, request.isPublic(), memberId);
         
         return ResponseEntity.ok(ApiResponse.success("공개 여부가 변경되었습니다."));
+    }
+    
+    @Operation(summary = "AI 스토리 초안 생성", description = "여행 계획과 메모를 분석하여 스토리 초안을 생성합니다.")
+    @PostMapping("/previews") public ResponseEntity<ApiResponse<StoryPreviewResponse>> generateStoryPreview(
+            @RequestBody StoryPreviewRequest request
+    ) {
+        StoryPreviewResponse response = storyService.generateStoryPreview(request);
+        
+        return ResponseEntity.ok(ApiResponse.success("스토리 초안이 생성되었습니다.", response));
     }
 
 }
