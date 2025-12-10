@@ -6,11 +6,13 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.ssafy.nayeogi.attraction.model.dto.AttractionResponse;
+import com.ssafy.nayeogi.attraction.model.dto.AttractionRecommendationResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanCreateRequest;
 import com.ssafy.nayeogi.attraction.model.dto.PlanDetailRequest;
 import com.ssafy.nayeogi.attraction.model.dto.PlanDetailResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanSearchResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanUpdateRequest;
+import com.ssafy.nayeogi.attraction.model.dto.SurveyResponse;
 
 @Mapper
 public interface AttractionDao {
@@ -31,4 +33,9 @@ public interface AttractionDao {
 	int deletePlanDetails(@Param("planId") Integer planId);
 
 	int deletePlan(@Param("planId") Integer planId);
+
+	List<SurveyResponse> findAllSurveys();
+
+	List<AttractionRecommendationResponse> recommendAttractions(@Param("area") String area,
+		@Param("surveyIds") List<Integer> surveyIds);
 }

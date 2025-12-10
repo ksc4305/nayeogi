@@ -175,7 +175,7 @@ CREATE TABLE IF NOT EXISTS `trip_dummy`.`plans` (
     REFERENCES `trip_dummy`.`members` (`id`)
     ON DELETE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 7
+AUTO_INCREMENT = 12
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -270,7 +270,7 @@ CREATE TABLE IF NOT EXISTS `trip_dummy`.`plan_details` (
     REFERENCES `trip_dummy`.`plans` (`id`)
     ON DELETE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 25
+AUTO_INCREMENT = 40
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -283,7 +283,7 @@ CREATE TABLE IF NOT EXISTS `trip_dummy`.`story_pages` (
   `story_id` INT NOT NULL,
   `attraction_id` INT NOT NULL,
   `image_path` VARCHAR(300) NULL DEFAULT NULL,
-  `user_memo` TEXT NULL DEFAULT NULL,
+  `content` TEXT NULL DEFAULT NULL COMMENT '페이지 본문 내용',
   `ai_generated_text` TEXT NULL DEFAULT NULL,
   `page_order` INT NOT NULL,
   PRIMARY KEY (`id`),
@@ -310,11 +310,7 @@ CREATE TABLE IF NOT EXISTS `trip_dummy`.`survey` (
   `type` VARCHAR(10) NOT NULL COMMENT '대분류,중분류 구분',
   `parent_id` INT NULL DEFAULT NULL COMMENT '부모 문항 ID',
   PRIMARY KEY (`id`),
-  INDEX `fk_survey_parent` (`parent_id` ASC) VISIBLE,
-  CONSTRAINT `fk_survey_parent`
-    FOREIGN KEY (`parent_id`)
-    REFERENCES `trip_dummy`.`survey` (`id`)
-    ON DELETE CASCADE)
+  INDEX `fk_survey_parent` (`parent_id` ASC) VISIBLE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;

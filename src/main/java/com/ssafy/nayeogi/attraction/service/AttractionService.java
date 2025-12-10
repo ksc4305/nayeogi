@@ -3,10 +3,13 @@ package com.ssafy.nayeogi.attraction.service;
 import java.util.List;
 
 import com.ssafy.nayeogi.attraction.model.dto.AttractionResponse;
+import com.ssafy.nayeogi.attraction.model.dto.AttractionRecommendationRequest;
+import com.ssafy.nayeogi.attraction.model.dto.AttractionRecommendationResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanCreateRequest;
 import com.ssafy.nayeogi.attraction.model.dto.PlanDetailResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanSearchResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanUpdateRequest;
+import com.ssafy.nayeogi.attraction.model.dto.SurveyResponse;
 
 public interface AttractionService {
 
@@ -21,5 +24,9 @@ public interface AttractionService {
 	void updatePlan(Integer planId, PlanUpdateRequest request);
 
 	int deletePlan(Integer planId);
+
+	List<SurveyResponse> findAllSurveys();
+
+	List<AttractionRecommendationResponse> recommendAttractions(AttractionRecommendationRequest request);
 
 }

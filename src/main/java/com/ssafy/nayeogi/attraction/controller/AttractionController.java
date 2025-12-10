@@ -14,10 +14,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.nayeogi.attraction.model.dto.AttractionResponse;
+import com.ssafy.nayeogi.attraction.model.dto.AttractionRecommendationRequest;
+import com.ssafy.nayeogi.attraction.model.dto.AttractionRecommendationResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanCreateRequest;
 import com.ssafy.nayeogi.attraction.model.dto.PlanDetailResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanSearchResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanUpdateRequest;
+import com.ssafy.nayeogi.attraction.model.dto.SurveyResponse;
 import com.ssafy.nayeogi.attraction.service.AttractionService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,13 @@ import lombok.RequiredArgsConstructor;
 public class AttractionController {
 
 	private final AttractionService attractionService;
+	
+	@PostMapping("/recommendations")
+	public ResponseEntity<List<AttractionRecommendationResponse>> recommendAttractions(
+		@RequestBody AttractionRecommendationRequest request) {
+		List<AttractionRecommendationResponse> recommendations = attractionService.recommendAttractions(request);
+		return ResponseEntity.ok(recommendations);
+	}
 
 	@GetMapping("/attractions")
 	public ResponseEntity<List<AttractionResponse>> searchAttractions(@RequestParam(required = false) String title, 
@@ -51,6 +61,12 @@ public class AttractionController {
 	public ResponseEntity<List<PlanDetailResponse>> searchPlanDetails(@PathVariable Integer planId) {
 		List<PlanDetailResponse> details = attractionService.searchPlanDetails(planId);
 		return ResponseEntity.ok(details);
+	}
+	
+	@GetMapping("/surveys")
+	public ResponseEntity<List<SurveyResponse>> getSurveys() {
+		List<SurveyResponse> surveys = attractionService.findAllSurveys();
+		return ResponseEntity.ok(surveys);
 	}
 	
 	@DeleteMapping("/plans/{planId}")

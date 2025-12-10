@@ -35,6 +35,57 @@
 		ORDER BY title ASC, id ASC
 	</select>
 
+	<select id="recommendAttractions"
+		parameterType="map"
+		resultType="AttractionRecommendationResponse">
+		SELECT 
+			a.id,
+			a.content_id,
+			a.title,
+			a.content_type_id,
+			a.area_code,
+			a.si_gun_gu_code,
+			a.first_image1,
+			a.first_image2,
+			a.map_level,
+			a.latitude,
+			a.longitude,
+			a.tel,
+			a.addr1,
+			a.addr2,
+			a.homepage,
+			a.overview,
+			b.cal_score
+		FROM attractions a
+		JOIN (
+			SELECT 
+				a.id,
+				COALESCE(SUM(af.score * sfw.weight), 0) AS cal_score
+			FROM attractions a
+			JOIN sidos s
+			  ON s.sido_name = #{area}
+			 AND a.area_code = s.sido_code
+			LEFT JOIN attraction_features af
+			  ON a.id = af.attraction_id
+			LEFT JOIN survey_feature_weight sfw
+			  ON af.id = sfw.attraction_features_id
+			<choose>
+				<when test="surveyIds != null and surveyIds.size() > 0">
+				  AND sfw.survey_id IN
+				  <foreach collection="surveyIds" item="surveyId" open="(" separator="," close=")">
+					  #{surveyId}
+				  </foreach>
+				</when>
+				<otherwise>
+				  AND 1 = 0
+				</otherwise>
+			</choose>
+			GROUP BY a.id
+		) b
+		  ON a.id = b.id
+		ORDER BY b.cal_score DESC
+	</select>
+
 	<insert id="insertPlan" parameterType="PlanCreateRequest" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
 		INSERT INTO plans (member_id, title, start_date, end_date, description)
 		VALUES (#{memberId}, #{title}, #{startDate}, #{endDate}, #{description})
@@ -100,6 +151,16 @@
 		FROM plan_details
 		WHERE plan_id = #{planId}
 		ORDER BY sequence ASC
+	</select>
+
+	<select id="findAllSurveys" resultType="SurveyResponse">
+		SELECT
+			id,
+			question,
+			type,
+			parent_id AS parentId
+		FROM survey
+		ORDER BY id ASC
 	</select>
 
 </mapper>

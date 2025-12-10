@@ -13,7 +13,7 @@ import com.ssafy.nayeogi.recommendation.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/recommendations")
+@RequestMapping("/api/v1/recommendationseprivated")
 @RequiredArgsConstructor
 public class RecommendationController {
 

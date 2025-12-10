@@ -3,15 +3,17 @@ package com.ssafy.nayeogi.attraction.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.nayeogi.attraction.model.dao.AttractionDao;
 import com.ssafy.nayeogi.attraction.model.dto.AttractionResponse;
+import com.ssafy.nayeogi.attraction.model.dto.AttractionRecommendationRequest;
+import com.ssafy.nayeogi.attraction.model.dto.AttractionRecommendationResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanCreateRequest;
 import com.ssafy.nayeogi.attraction.model.dto.PlanDetailRequest;
 import com.ssafy.nayeogi.attraction.model.dto.PlanDetailResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanSearchResponse;
 import com.ssafy.nayeogi.attraction.model.dto.PlanUpdateRequest;
+import com.ssafy.nayeogi.attraction.model.dto.SurveyResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -75,6 +77,16 @@ public class AttractionServiceImpl implements AttractionService {
 				attractionDao.insertPlanDetails(planId, details);
 			}
 		}
+	}
+
+	@Override
+	public List<SurveyResponse> findAllSurveys() {
+		return attractionDao.findAllSurveys();
+	}
+
+	@Override
+	public List<AttractionRecommendationResponse> recommendAttractions(AttractionRecommendationRequest request) {
+		return attractionDao.recommendAttractions(request.getArea(), request.getSurveyIds());
 	}
 	
 	//plan_details table의 sequence 계산
