@@ -84,6 +84,7 @@ public class AttractionServiceImpl implements AttractionService {
 		return attractionDao.findAllSurveys();
 	}
 
+	//추후 부분범위처리 가능
 	@Override
 	public List<AttractionRecommendationResponse> recommendAttractions(AttractionRecommendationRequest request) {
 		return attractionDao.recommendAttractions(request.getArea(), request.getSurveyIds());
