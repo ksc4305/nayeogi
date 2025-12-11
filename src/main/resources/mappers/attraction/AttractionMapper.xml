@@ -68,18 +68,13 @@
 			LEFT JOIN attraction_features af
 			  ON a.id = af.attraction_id
 			LEFT JOIN survey_feature_weight sfw
-			  ON af.id = sfw.attraction_features_id
-			<choose>
-				<when test="surveyIds != null and surveyIds.size() > 0">
+			  ON af.feature_id = sfw.attraction_features_id
+
 				  AND sfw.survey_id IN
 				  <foreach collection="surveyIds" item="surveyId" open="(" separator="," close=")">
 					  #{surveyId}
 				  </foreach>
-				</when>
-				<otherwise>
-				  AND 1 = 0
-				</otherwise>
-			</choose>
+
 			GROUP BY a.id
 		) b
 		  ON a.id = b.id
