@@ -1,5 +1,6 @@
 package com.ssafy.nayeogi.member.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,11 +26,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 
-	// 형님이 만드신 MemberDao 인터페이스 주입
 	private final MemberDao memberDao;
 	
-	// TODO: 추후 PasswordEncoder 주입 받아 비밀번호 암호화 적용 필요
-	// private final PasswordEncoder passwordEncoder;
+	 private final PasswordEncoder passwordEncoder;
 	
 	/**
 	 * 회원가입 비즈니스 로직
@@ -47,7 +46,7 @@ public class MemberServiceImpl implements MemberService {
 		}
 		
 		// 2. 비밀번호 암호화 (추후 적용할 자리)
-		// memberDto.setUserPassword(passwordEncoder.encode(memberDto.getUserPassword()));
+		 memberDto.setUserPassword(passwordEncoder.encode(memberDto.getUserPassword()));
 		
 			memberDao.insertMember(memberDto);
 	}
@@ -76,6 +75,50 @@ public class MemberServiceImpl implements MemberService {
 		// 4. 검증 완료된 회원 정보 리턴
 		return memberInfo;
 	}
+
+	@Override
+	public MemberDto memberInfo(String userId) {
+		
+		return memberDao.memberInfo(userId);
+	}
+	
+	
+	/**
+	 * 회원 정보 수정 비즈니스 로직
+	 * @param memberDto 수정할 정보 (userId는 필수, 나머지는 선택)
+	 */
+	@Override
+	@Transactional
+	public void updateMember(MemberDto memberDto) {
+		
+		// 1. 비밀번호가 요청에 포함되어 있다면 (즉, 비번을 바꾸고 싶다면)
+		if (memberDto.getUserPassword() != null && !memberDto.getUserPassword().isEmpty()) {
+			// [핵심] BCryptPasswordEncoder로 반드시 암호화하여 DTO에 다시 세팅합니다.
+			String encodedPassword = passwordEncoder.encode(memberDto.getUserPassword());
+			memberDto.setUserPassword(encodedPassword);
+		}
+		
+		// 2. DAO 호출 (수정할 값이 없어도 WHERE 절의 userId는 존재하므로 안전함)
+		int result = memberDao.updateMember(memberDto);
+		
+		// 3. 수정 실패 처리 (보통 userId가 DB에 없으면 0이 리턴됨)
+		if (result == 0) {
+			// 수정 대상 회원이 없다는 예외를 던질 수 있음 (선택 사항)
+			throw new CustomException(ErrorCode.MEMBER_NOT_FOUND); 
+		}
+	}
+
+	@Override
+	@Transactional
+	public void deleteMember(String userId) {
+		int result = memberDao.deleteMember(userId);
+		
+		if(result==0) {
+			throw new CustomException(ErrorCode.MEMBER_NOT_FOUND); 
+		}
+		
+	}
+	
 	
 	
 

@@ -42,5 +42,27 @@
 		WHERE id = #{userId}
 	</select>
 	
+	<!-- 
+		회원 정보 수정입니다.
+	 -->
+	
+	<update id="updateMember" parameterType="com.ssafy.nayeogi.member.model.dto.MemberDto">
+		UPDATE members
+		<set>
+			<if test="userPassword != null and userPassword != ''">
+				pw = #{userPassword},
+			</if>
+			<if test="userName != null and userName != ''">
+				name = #{userName},
+			</if>
+			</set>
+		WHERE id = #{userId}
+	</update>
+
+	<delete id="deleteMember" parameterType="string">
+		DELETE FROM members
+		WHERE id = #{userId}
+	</delete>
+	
 
 </mapper>

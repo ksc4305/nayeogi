@@ -24,7 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return User.builder()
                 .username(member.getUserId())
                 // TODO: 암호화된 조회, 저장 코드 구현하기, 현재는 평문으로 저장하고 조회함 
-                .password("{noop}" + member.getUserPassword()) 
+                .password( member.getUserPassword()) 
                 .roles(member.getRole()) 
                 .build();
     }

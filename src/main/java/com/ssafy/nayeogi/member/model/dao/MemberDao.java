@@ -33,4 +33,11 @@ public interface MemberDao {
 	 */
 	MemberDto memberInfo(String userId);
 	
+	
+	// 4. 회원 정보 수정 
+	int updateMember(MemberDto memberDto);	
+	
+	
+	// 5. 회원탈퇴
+	int deleteMember(String userId);
 }

@@ -8,8 +8,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -106,12 +108,112 @@ public class MemberController {
     }
 	@PostMapping("/logout")
 	public ResponseEntity<ApiResponse<Void>> logout(HttpSession session) {
-		log.info("로그아웃 요청 - Session ID: {}", session.getId());
-		
-		// 세션 무효화 (저장된 모든 정보 삭제)
-		session.invalidate();
-		
-		return ResponseEntity.ok(ApiResponse.success("로그아웃 성공"));
+	    log.info("로그아웃 요청 - Session ID: {}", session.getId());
+	    
+	    // 1. Spring Security Context 내부의 인증 정보 제거
+	    SecurityContextHolder.clearContext();
+	    
+	    // 2. HTTP 세션 무효화 (JSESSIONID 제거 및 서버 메모리 정리)
+	    session.invalidate();
+	    
+	    return ResponseEntity.ok(ApiResponse.success("로그아웃 성공"));
 	}
+	
+	/**
+     * 회원 정보 조회 API
+     * [GET] /api/v1/members/me
+     * 명세서: 로그인된 사용자(세션)의 정보를 조회합니다.
+     */
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<MemberDto>> userInfo(Authentication authentication) {
+        log.info("회원 정보 조회 요청 (Me)");
+
+        // 1. 인증 정보 확인 (비로그인 상태 체크)
+        // Spring Security가 세션(JSESSIONID)을 확인해서 authentication 객체를 채워줍니다.
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("로그인이 필요한 서비스입니다.", null)); 
+                    // ApiResponse에 error(msg) 메서드가 없으면 .success(null) 등으로 대체 가능
+        }
+
+        // 2. 로그인 아이디(PK) 추출
+        // CustomUserDetailsService에서 넣어둔 username(userId)을 꺼냅니다.
+        String userId = authentication.getName();
+        log.info("조회 대상 ID: {}", userId);
+
+        // 3. 서비스 호출 (기존 메서드 재사용)
+        MemberDto memberInfo = memberService.memberInfo(userId);
+
+        if (memberInfo != null) {
+            // [중요] 보안상 비밀번호는 클라이언트로 보내지 않습니다.
+            memberInfo.setUserPassword(""); 
+        }
+
+        // 4. 응답 반환
+        return ResponseEntity.ok(ApiResponse.success(memberInfo));
+    }
+    
+    /**
+     * 회원 정보 수정 API
+     * [PUT] /api/v1/members
+     * @param memberDto 수정할 정보 (userName, userPassword 등)
+     * @param authentication 현재 로그인된 사용자 정보 (Spring Security Context)
+     * @return 성공 시 200 OK와 성공 메시지 반환
+     */
+    @PutMapping
+    public ResponseEntity<ApiResponse<Void>> updateMember(
+            @RequestBody MemberDto memberDto, Authentication authentication) {
+        
+        // 1. 로그인 여부 및 사용자 ID 추출 (인증 필수)
+        if (authentication == null || !authentication.isAuthenticated()) {
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("로그인이 필요합니다.", null)); 
+        }
+        String userId = authentication.getName();
+        
+        // 2. DTO에 수정 대상 ID(PK) 설정
+        // 클라이언트가 ID를 보내지 않아도, 서버에서 인증된 ID를 강제로 넣어줍니다.
+        memberDto.setUserId(userId);
+        
+        // 3. 서비스 호출 (비밀번호 암호화 및 DB 업데이트 수행)
+        memberService.updateMember(memberDto);
+        
+        // 4. 성공 응답
+        return ResponseEntity.ok(ApiResponse.success("회원 정보 수정 성공"));
+    }
+    
+    /**
+     * 회원 탈퇴 API
+     * [DELETE] /api/v1/members
+     * 명세서: 회원 정보를 삭제하고 로그아웃 처리합니다.
+     */
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> deleteMember(
+            Authentication authentication, 
+            HttpServletRequest request) {
+        
+        // 1. 인증 확인
+        if (authentication == null || !authentication.isAuthenticated()) {
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("로그인이 필요합니다.", null));
+        }
+        
+        // 2. 사용자 ID 추출
+        String userId = authentication.getName();
+        log.info("회원 탈퇴 요청 - ID: {}", userId);
+        
+        // 3. 서비스 호출 (DB 데이터 삭제)
+        memberService.deleteMember(userId);
+        
+        // 4. 로그아웃 처리 (세션 및 컨텍스트 삭제)
+        // DB는 지웠는데 로그인 상태가 유지되면 안 되니까요!
+        SecurityContextHolder.clearContext();
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        
+        return ResponseEntity.ok(ApiResponse.success("회원 탈퇴 성공 (로그아웃 처리됨)"));
+    }
 	
 }

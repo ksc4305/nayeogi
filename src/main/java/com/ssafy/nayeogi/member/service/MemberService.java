@@ -31,5 +31,15 @@ public interface MemberService {
 	 * @return 로그인 성공 시 회원정보(MemberDto), 실패 시 null
 	 */
 	MemberDto login(String userId, String userPassword);
+
+	MemberDto memberInfo(String userId);
+
+	/**
+	 * 회원 정보 수정 비즈니스 로직
+	 * @param memberDto 수정할 정보 (userId는 필수, 나머지는 선택)
+	 */
+	void updateMember(MemberDto memberDto);
+	
+	void deleteMember(String userId);
 	
 }
