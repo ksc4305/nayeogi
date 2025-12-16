@@ -39,11 +39,12 @@ public class MemberServiceImpl implements MemberService {
 		
 		// 1. 아이디 중복 체크
 		// DAO를 통해 DB 조회 -> 0보다 크면 이미 있는 아이디입니다.
-		if(memberDao.idCheck(memberDto.getUserId()) > 0) {
-			// [핵심] 여기서 에러를 던지면 컨트롤러로 가지 않고 바로 핸들러로 갑니다.
-			// "이미 사용 중인 아이디입니다."라는 메시지를 가진 에러 코드를 전달합니다.
-			throw new CustomException(ErrorCode.MEMBER_ID_DUPLICATE);
-		}
+//		if(memberDao.idCheck(memberDto.getUserId()) > 0) {
+//			// [핵심] 여기서 에러를 던지면 컨트롤러로 가지 않고 바로 핸들러로 갑니다.
+//			// "이미 사용 중인 아이디입니다."라는 메시지를 가진 에러 코드를 전달합니다.
+//			throw new CustomException(ErrorCode.MEMBER_ID_DUPLICATE);
+//		}
+		// 따로 구현해 놔야 회원가입창에서 사용 가능 
 		
 		// 2. 비밀번호 암호화 (추후 적용할 자리)
 		 memberDto.setUserPassword(passwordEncoder.encode(memberDto.getUserPassword()));
@@ -55,8 +56,10 @@ public class MemberServiceImpl implements MemberService {
 	 * 아이디 중복 체크 (단순 조회)
 	 */
 	@Override
-	public int idCheck(String userId) {
-		return memberDao.idCheck(userId);
+	public void idCheck(String userId) {
+		if(memberDao.idCheck(userId) > 0) {
+			throw new CustomException(ErrorCode.MEMBER_ID_DUPLICATE);
+		}
 	}
 
 	@Override
@@ -113,7 +116,7 @@ public class MemberServiceImpl implements MemberService {
 	public void deleteMember(String userId) {
 		int result = memberDao.deleteMember(userId);
 		
-		if(result==0) {
+		if(result!=1) {
 			throw new CustomException(ErrorCode.MEMBER_NOT_FOUND); 
 		}
 		

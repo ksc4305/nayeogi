@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -66,6 +67,15 @@ public class MemberController {
 		return ResponseEntity
 				.status(HttpStatus.CREATED)
 				.body(ApiResponse.success("회원가입 성공"));
+	}
+	
+	@GetMapping("/id-check/{userId}")
+	public ResponseEntity<Void> checkId(@PathVariable String userId) {
+	    // 방금 서비스에 만든 메서드를 호출합니다.
+	    memberService.idCheck(userId);
+	    
+	    // 예외가 안 터지고 여기까지 왔다면 사용 가능한 아이디입니다.
+	    return ResponseEntity.ok().build();
 	}
 // // 기존 성환이 로그인 코드
 //	@PostMapping("/login") 

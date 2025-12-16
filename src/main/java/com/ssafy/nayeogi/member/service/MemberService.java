@@ -22,7 +22,7 @@ public interface MemberService {
 	 * @return 해당 아이디의 개수 (0 또는 1)
 	 * @throws Exception 예외
 	 */
-	int idCheck(String userId) ;
+	void idCheck(String userId) ;
 	
 	/**
 	 * 로그인 처리
