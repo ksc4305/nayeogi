@@ -18,6 +18,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+        	// 
+        	.cors(cors -> cors.configure(http))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()) // 테스트용 전체 경로 허용
 //            .authorizeHttpRequests(
