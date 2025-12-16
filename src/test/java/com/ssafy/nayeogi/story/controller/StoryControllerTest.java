@@ -1,14 +1,8 @@
 package com.ssafy.nayeogi.story.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ssafy.nayeogi.story.model.dto.StoryDetailResponse;
-import com.ssafy.nayeogi.story.model.dto.StoryListResponse;
-import com.ssafy.nayeogi.story.model.dto.StoryPageDetail;
-import com.ssafy.nayeogi.story.model.dto.StoryPreviewRequest;
-import com.ssafy.nayeogi.story.model.dto.StoryPreviewResponse;
-import com.ssafy.nayeogi.story.model.dto.StorySaveRequest;
-import com.ssafy.nayeogi.story.model.dto.StoryUpdateRequest;
-import com.ssafy.nayeogi.story.model.dto.StoryVisibilityRequest;
+import com.ssafy.nayeogi.member.model.dto.MemberDto;
+import com.ssafy.nayeogi.story.model.dto.*;
 import com.ssafy.nayeogi.story.service.StoryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,25 +10,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser; // 시큐리티 테스트용
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithSecurityContext;
+import org.springframework.security.test.context.support.WithSecurityContextFactory;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf; // CSRF 토큰
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(StoryController.class)
 class StoryControllerTest {
 
@@ -47,9 +43,34 @@ class StoryControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    
+    @Retention(RetentionPolicy.RUNTIME)
+    @WithSecurityContext(factory = WithMockCustomUserSecurityContextFactory.class)
+    public @interface WithMockCustomUser {
+        String username() default "ssafy01";
+        String name() default "김싸피";
+    }
+
+    // --- [커스텀 SecurityContextFactory] ---
+    public static class WithMockCustomUserSecurityContextFactory implements WithSecurityContextFactory<WithMockCustomUser> {
+        @Override
+        public SecurityContext createSecurityContext(WithMockCustomUser annotation) {
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+
+            // MemberDto가 UserDetails를 구현했다고 가정 (또는 CustomUserDetails 사용 시 해당 객체 생성)
+            MemberDto member = new MemberDto();
+            member.setUserId(annotation.username());
+            member.setUserName(annotation.name());
+            // 필요한 권한 설정 (MemberDto 내부에 getAuthorities 구현이 있다면 사용)
+            
+            Authentication auth = new UsernamePasswordAuthenticationToken(member, "password", null);
+            context.setAuthentication(auth);
+            return context;
+        }
+    }
     @Test
     @DisplayName("스토리북 저장 성공 테스트 (로그인 사용자)")
-    @WithMockUser(username = "ssafy01", roles = "USER") // 가짜 유저 로그인 상태
+    @WithMockCustomUser(username = "ssafy01")
     void saveStory_Success() throws Exception {
         // given
         StorySaveRequest request = new StorySaveRequest();
@@ -73,7 +94,7 @@ class StoryControllerTest {
     
     @Test
     @DisplayName("내 스토리북 목록 조회 성공 (전체 조회)")
-    @WithMockUser(username = "ssafy01", roles = "USER")
+    @WithMockCustomUser(username = "ssafy01")
     void getStoryList_All_Success() throws Exception {
         // given
         List<StoryListResponse> mockList = new ArrayList<>();
@@ -89,12 +110,13 @@ class StoryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.stories.length()").value(2)); // 2개 왔는지 확인
+                .andExpect(jsonPath("$.data.length()").value(2)) // 2개 왔는지 확인
+                .andExpect(jsonPath("$.data[0].title").value("부산 여행")); // [수정] 첫 번째 요소 확인
     }
 
     @Test
     @DisplayName("내 스토리북 목록 조회 성공 (특정 계획 planId 필터링)")
-    @WithMockUser(username = "ssafy01", roles = "USER")
+    @WithMockCustomUser(username = "ssafy01")
     void getStoryList_WithPlanId_Success() throws Exception {
         // given
         int targetPlanId = 101;
@@ -114,13 +136,13 @@ class StoryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("SUCCESS"))
                 // 반환된 리스트의 첫 번째 요소가 planId=101인지 검증
-                .andExpect(jsonPath("$.data.stories[0].planId").value(targetPlanId))
-                .andExpect(jsonPath("$.data.stories[0].title").value("부산 여행"));
+                .andExpect(jsonPath("$.data[0].planId").value(targetPlanId))
+                .andExpect(jsonPath("$.data[0].title").value("부산 여행"));
     }
     
     @Test
     @DisplayName("스토리북 상세 조회 성공")
-    @WithMockUser(username = "ssafy01")
+    @WithMockCustomUser(username = "ssafy01")
     void getStoryDetail_Success() throws Exception {
         // given
         int storyId = 501;
@@ -152,7 +174,7 @@ class StoryControllerTest {
     
     @Test
     @DisplayName("스토리북 수정 성공")
-    @WithMockUser(username = "ssafy01")
+    @WithMockCustomUser(username = "ssafy01")
     void modifyStory_Success() throws Exception {
         int storyId = 501;
         StoryUpdateRequest request = new StoryUpdateRequest();
@@ -172,7 +194,7 @@ class StoryControllerTest {
 
     @Test
     @DisplayName("스토리북 삭제 성공")
-    @WithMockUser(username = "ssafy01")
+    @WithMockCustomUser(username = "ssafy01")
     void deleteStory_Success() throws Exception {
         int storyId = 501;
 
@@ -185,7 +207,7 @@ class StoryControllerTest {
     
     @Test
     @DisplayName("스토리북 공개 여부 변경 성공")
-    @WithMockUser(username = "ssafy01")
+    @WithMockCustomUser(username = "ssafy01")
     void changeVisibility_Success() throws Exception {
         int storyId = 501;
         StoryVisibilityRequest request = new StoryVisibilityRequest();
@@ -202,7 +224,7 @@ class StoryControllerTest {
     
     @Test
     @DisplayName("AI 스토리 초안 생성 테스트 (Mock)")
-    @WithMockUser(username = "ssafy01")
+    @WithMockCustomUser(username = "ssafy01")
     void generateStoryPreview_Success() throws Exception {
         // given
         StoryPreviewRequest request = new StoryPreviewRequest();
@@ -238,4 +260,4 @@ class StoryControllerTest {
                 .andExpect(jsonPath("$.data.pages[0].aiText").value("AI가 써준 감성 글..."));
     }
 
-}
+}       

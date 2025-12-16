@@ -12,6 +12,8 @@ public enum ErrorCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
     SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다."),
     FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+    UNAUTHORIZED_MEMBER(HttpStatus.UNAUTHORIZED, "로그인이 필요한 서비스입니다."),
+
 
     // 2. 회원 관련 (MEMBER_)
     MEMBER_ID_DUPLICATE(HttpStatus.BAD_REQUEST, "이미 사용 중인 아이디입니다."),

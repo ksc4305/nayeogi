@@ -23,11 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class StoryServiceImpl implements StoryService {
 
     private final StoryDao storyDao;
-
     @Override
     @Transactional
     public int saveStory(StorySaveRequest request, String memberId) {
-        // 1. 작성자 ID 설정
+    	if (memberId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_MEMBER);
+        }
+    	// 1. 작성자 ID 설정
         request.setMemberId(memberId);
 
         // 2. 스토리북 메인 저장 (DTO의 id 필드에 PK가 담김)
@@ -50,12 +52,18 @@ public class StoryServiceImpl implements StoryService {
     
     @Override
     public List<StoryListResponse> getStoryList(String memberId, Integer planId) {
-        return storyDao.selectStoryList(memberId, planId);
+    	if (memberId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_MEMBER);
+        }
+    	return storyDao.selectStoryList(memberId, planId);
     }
     
     @Override
     public StoryDetailResponse getStoryDetail(int storyId, String memberId) {
-        StoryDetailResponse story = storyDao.selectStoryDetail(storyId);
+    	if (memberId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_MEMBER);
+        }
+    	StoryDetailResponse story = storyDao.selectStoryDetail(storyId);
         
         // 1. 글이 없는 경우
         if (story == null) {
@@ -74,6 +82,9 @@ public class StoryServiceImpl implements StoryService {
     @Override
     @Transactional
     public void modifyStory(int storyId, StoryUpdateRequest request, String memberId) {
+    	if (memberId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_MEMBER);
+        }
     	// 1. 작성자 확인 (권한 체크)
     	String authorId = storyDao.selectMemberIdByStoryId(storyId);
     	if (authorId == null) {
@@ -99,6 +110,9 @@ public class StoryServiceImpl implements StoryService {
     @Override
     @Transactional
     public void deleteStory(int storyId, String memberId) {
+    	if (memberId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_MEMBER);
+        }
     	// 1. 작성자 확인
     	String authorId = storyDao.selectMemberIdByStoryId(storyId);
     	if (authorId == null) {
@@ -119,7 +133,10 @@ public class StoryServiceImpl implements StoryService {
     @Override
     @Transactional
     public void changeVisibility(int storyId, boolean isPublic, String memberId) {
-        // 1. 작성자 확인 (내 글인지)
+    	if (memberId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_MEMBER);
+        }
+    	// 1. 작성자 확인 (내 글인지)
         String authorId = storyDao.selectMemberIdByStoryId(storyId);
         
         if (authorId == null) {
