@@ -142,8 +142,9 @@
 			plan_id,
 			attraction_id,
 			plan_date,
-			sequence
-		FROM plan_details
+			sequence,
+			(select title from attractions a where p.attraction_id = a.id) attraction_title
+		FROM plan_details p
 		WHERE plan_id = #{planId}
 		ORDER BY sequence ASC
 	</select>

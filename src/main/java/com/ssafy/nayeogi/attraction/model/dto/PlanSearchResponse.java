@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PlanSearchResponse {
 	private Integer id;
-	private String memberId;
+	private String member_id;
 	private String title;
-	private LocalDate startDate;
-	private LocalDate endDate;
+	private LocalDate start_date;
+	private LocalDate end_date;
 	private String description;
-	private LocalDateTime createdAt;
+	private LocalDateTime created_at;
 }

@@ -12,4 +12,5 @@ public class PlanDetailResponse {
 	private Integer attraction_id;
 	private Integer plan_date;
 	private Integer sequence;
+	private String attraction_title;
 }
