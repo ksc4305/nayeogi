@@ -1,6 +1,6 @@
 package com.ssafy.nayeogi.common.exception;
 
-import com.ssafy.nayeogi.common.dto.ApiResponse;
+import com.ssafy.nayeogi.common.dto.ApiResponseDto;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
      * 1. 비즈니스 로직 에러 (우리가 직접 발생시킨 에러)
      */
 	@ExceptionHandler(CustomException.class)
-	public ResponseEntity<ApiResponse<Void>> handleCustomException(CustomException e) {
+	public ResponseEntity<ApiResponseDto<Void>> handleCustomException(CustomException e) {
 	    ErrorCode errorCode = e.getErrorCode();
 	    
 	    // 로그에는 상세하게
@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
 	    return ResponseEntity
 	            .status(errorCode.getHttpStatus())
 	            // errorCode.name() -> ENUM으로 설정한 예외 이름 반환
-	            .body(ApiResponse.error(errorCode.name(), errorCode.getMessage()));
+	            .body(ApiResponseDto.error(errorCode.name(), errorCode.getMessage()));
 	}
 	
 	/**
@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
      * - 팀원에게 전달 -> pom에 valid 의존성 추가 -> dto에 설정 -> 컨트롤러에 @Valid 설정 학습 필요
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiResponseDto<Void>> handleValidationException(MethodArgumentNotValidException e) {
         BindingResult bindingResult = e.getBindingResult();
         StringBuilder builder = new StringBuilder();
         
@@ -53,30 +53,30 @@ public class GlobalExceptionHandler {
         // BAD_REQUEST 코드로 응답
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(ErrorCode.BAD_REQUEST.name(), errorMessage));
+                .body(ApiResponseDto.error(ErrorCode.BAD_REQUEST.name(), errorMessage));
     }
 
     /**
      * 3. 파일 용량 초과
      */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<ApiResponse<Void>> handleMaxSizeException(MaxUploadSizeExceededException e) {
+    public ResponseEntity<ApiResponseDto<Void>> handleMaxSizeException(MaxUploadSizeExceededException e) {
         log.error("File Size Exceeded: {}", e.getMessage());
         
         return ResponseEntity
                 .status(ErrorCode.FILE_SIZE_EXCEEDED.getHttpStatus())
-                .body(ApiResponse.error(ErrorCode.FILE_SIZE_EXCEEDED.name(), ErrorCode.FILE_SIZE_EXCEEDED.getMessage()));
+                .body(ApiResponseDto.error(ErrorCode.FILE_SIZE_EXCEEDED.name(), ErrorCode.FILE_SIZE_EXCEEDED.getMessage()));
     }
 
     /**
      * 4. 그 외 모든 예상치 못한 서버 에러
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
+    public ResponseEntity<ApiResponseDto<Void>> handleException(Exception e) {
         log.error("Unhandled Exception: ", e); //(디버깅용)
         
         return ResponseEntity
                 .status(ErrorCode.SERVER_ERROR.getHttpStatus())
-                .body(ApiResponse.error(ErrorCode.SERVER_ERROR.name(), ErrorCode.SERVER_ERROR.getMessage()));
+                .body(ApiResponseDto.error(ErrorCode.SERVER_ERROR.name(), ErrorCode.SERVER_ERROR.getMessage()));
     }
 }

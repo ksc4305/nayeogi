@@ -1,6 +1,6 @@
 package com.ssafy.nayeogi.image.controller;
 
-import com.ssafy.nayeogi.common.dto.ApiResponse;
+import com.ssafy.nayeogi.common.dto.ApiResponseDto;
 import com.ssafy.nayeogi.image.model.dto.ImageTransformRequest;
 import com.ssafy.nayeogi.image.model.dto.ImageTransformResponse;
 import com.ssafy.nayeogi.image.model.dto.ImageUploadResponse;
@@ -35,14 +35,14 @@ public class ImageController {
      */
     @Operation(summary = "이미지 파일 업로드", description = "로컬 이미지 파일을 S3에 업로드하고 URL을 반환합니다.")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<ImageUploadResponse>> uploadFiles(
+    public ResponseEntity<ApiResponseDto<ImageUploadResponse>> uploadFiles(
             @Parameter(description = "업로드할 이미지 파일 목록") 
             @RequestPart("files") List<MultipartFile> files
     ) {
         List<String> urls = imageService.upload(files);
         ImageUploadResponse responseDto = new ImageUploadResponse(urls);
         
-        return ResponseEntity.ok(ApiResponse.success(responseDto));
+        return ResponseEntity.ok(ApiResponseDto.success(responseDto));
     }
     
     /**
@@ -50,13 +50,13 @@ public class ImageController {
      */
     @Operation(summary = "이미지 파일 삭제", description = "S3에 저장된 이미지를 URL을 통해 삭제합니다.")
     @DeleteMapping
-    public ResponseEntity<ApiResponse<Void>> deleteFile(
+    public ResponseEntity<ApiResponseDto<Void>> deleteFile(
             @Parameter(description = "삭제할 이미지의 전체 URL", example = "https://s3.../uuid.jpg") 
             @RequestParam("imageUrl") String imageUrl
     ) {
         imageService.delete(imageUrl);
         
-        return ResponseEntity.ok(ApiResponse.success("이미지가 삭제되었습니다."));
+        return ResponseEntity.ok(ApiResponseDto.success("이미지가 삭제되었습니다."));
     }
     
     /**
@@ -64,13 +64,13 @@ public class ImageController {
      */
     @Operation(summary = "AI 이미지 스타일 변환", description = "업로드된 사진을 지정된 화풍(ANIME, SKETCH 등)으로 변환합니다.")
     @PostMapping("/transformations")
-    public ResponseEntity<ApiResponse<ImageTransformResponse>> transformImage(
+    public ResponseEntity<ApiResponseDto<ImageTransformResponse>> transformImage(
             @RequestBody ImageTransformRequest request
     ) {
         // 실제로는 여기서 AI 서버 통신 로직이 수행됨
         String newUrl = imageService.transformImage(request.getOriginalUrl(), request.getStyle());
         
-        return ResponseEntity.ok(ApiResponse.success(
+        return ResponseEntity.ok(ApiResponseDto.success(
                 "이미지 변환이 완료되었습니다.", 
                 new ImageTransformResponse(newUrl)
         ));
