@@ -139,9 +139,9 @@
 
 	<select id="findPlanDetailsByPlanId" parameterType="int" resultType="PlanDetailResponse">
 		SELECT
-			plan_id AS planId,
-			attraction_id AS attractionId,
-			plan_date AS planDate,
+			plan_id,
+			attraction_id,
+			plan_date,
 			sequence
 		FROM plan_details
 		WHERE plan_id = #{planId}
