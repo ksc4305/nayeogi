@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class PlanDetailRequest {
-	private final Integer attractionId;
-	private final Integer sequence;
+	private Integer attractionId;
+	private Integer planDate;
+	private Integer sequence;
 }

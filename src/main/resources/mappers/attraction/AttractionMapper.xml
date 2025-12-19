@@ -87,10 +87,10 @@
 	</insert>
 
 	<insert id="insertPlanDetails" parameterType="map">
-		INSERT INTO plan_details (plan_id, attraction_id, sequence)
+		INSERT INTO plan_details (plan_id, attraction_id, plan_date, sequence)
 		VALUES
 		<foreach collection="details" item="detail" separator=",">
-			(#{planId}, #{detail.attractionId}, #{detail.sequence})
+			(#{planId}, #{detail.attractionId}, #{detail.planDate}, #{detail.sequence})
 		</foreach>
 	</insert>
 

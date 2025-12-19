@@ -388,7 +388,7 @@ CREATE TABLE `storybooks` (
   `title` varchar(200) NOT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `hit` int DEFAULT '0',
-  `is_public` char(1) DEFAULT 'N',
+  is_public TINYINT(1) DEFAULT 0,
   `thumbnail_path` varchar(300) DEFAULT NULL,
   `plan_id` int NOT NULL,
   PRIMARY KEY (`id`),
@@ -405,7 +405,7 @@ CREATE TABLE `storybooks` (
 
 LOCK TABLES `storybooks` WRITE;
 /*!40000 ALTER TABLE `storybooks` DISABLE KEYS */;
-INSERT INTO `storybooks` VALUES (1,'ssafy01','경주 힐링 스토리북','2025-11-27 17:39:36',23,'Y','/thumbs/story_001.jpg',1),(2,'user02','제주 맛있는 하루 스토리북','2025-11-27 17:39:36',41,'Y','/thumbs/story_002.jpg',2),(3,'healing3','전라도 감성 여행 스토리북','2025-11-27 17:39:36',12,'N','/thumbs/story_003.jpg',3),(4,'foodie4','서울 카페 투어 스토리북','2025-11-27 17:39:36',35,'Y','/thumbs/story_004.jpg',4),(5,'photo5','강원도 사진 여행 스토리북','2025-11-27 17:39:36',8,'N','/thumbs/story_005.jpg',5),(6,'admin01','부산 일정 점검 스토리북','2025-11-27 17:39:36',5,'Y','/thumbs/story_006.jpg',6);
+INSERT INTO `storybooks` VALUES (1,'ssafy01','경주 힐링 스토리북','2025-11-27 17:39:36',23,1,'/thumbs/story_001.jpg',1),(2,'user02','제주 맛있는 하루 스토리북','2025-11-27 17:39:36',41,1,'/thumbs/story_002.jpg',2),(3,'healing3','전라도 감성 여행 스토리북','2025-11-27 17:39:36',12,0,'/thumbs/story_003.jpg',3),(4,'foodie4','서울 카페 투어 스토리북','2025-11-27 17:39:36',35,1,'/thumbs/story_004.jpg',4),(5,'photo5','강원도 사진 여행 스토리북','2025-11-27 17:39:36',8,0,'/thumbs/story_005.jpg',5),(6,'admin01','부산 일정 점검 스토리북','2025-11-27 17:39:36',5,1,'/thumbs/story_006.jpg',6);
 /*!40000 ALTER TABLE `storybooks` ENABLE KEYS */;
 UNLOCK TABLES;
 

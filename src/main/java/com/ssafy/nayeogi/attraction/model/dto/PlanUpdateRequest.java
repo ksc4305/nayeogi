@@ -15,4 +15,5 @@ public class PlanUpdateRequest {
 	private String description;
 	@JsonProperty("attractionId")
 	private List<Integer> attractionIds;
+	private List<PlanDetailRequest> planDetails;
 }
