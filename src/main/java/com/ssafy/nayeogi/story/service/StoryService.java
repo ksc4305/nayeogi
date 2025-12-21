@@ -2,7 +2,7 @@ package com.ssafy.nayeogi.story.service;
 
 import java.util.List;
 
-import com.ssafy.nayeogi.story.model.dto.StoryAIRequest;
+import com.ssafy.nayeogi.story.model.dto.AiStoryRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryDetailResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryListResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryPlanDetailResponse;
@@ -15,7 +15,7 @@ public interface StoryService {
     /**
      * 스토리 저장
      */
-	int generateAndSaveStory(StoryAIRequest request, String memberId);
+	int generateAndSaveStory(AiStoryRequest request, String memberId);
     /**
      * 스토리 목록 조회(전체 or 특정 여행의 스토리)
      */

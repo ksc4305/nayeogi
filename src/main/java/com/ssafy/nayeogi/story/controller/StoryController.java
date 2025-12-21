@@ -2,7 +2,7 @@ package com.ssafy.nayeogi.story.controller;
 
 import com.ssafy.nayeogi.common.dto.ApiResponseDto;
 import com.ssafy.nayeogi.member.model.dto.MemberDto;
-import com.ssafy.nayeogi.story.model.dto.StoryAIRequest;
+import com.ssafy.nayeogi.story.model.dto.AiStoryRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryDetailResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryListResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryPlanDetailResponse;
@@ -57,7 +57,7 @@ public class StoryController {
     @Operation(summary = "AI 여행기 생성 요청 및 저장", description = "입력된 정보를 바탕으로 AI가 여행기를 작성하고 비공개 상태로 저장합니다.")
     @PostMapping("/ai-generate")
     public ResponseEntity<ApiResponseDto<StorySaveResponse>> generateAIStory(
-            @RequestBody StoryAIRequest request,
+            @RequestBody AiStoryRequest request,
             @AuthenticationPrincipal MemberDto memberDto // 로그인한 사용자 정보
     ) {
         String memberId = (memberDto != null) ? memberDto.getUserId() : "anonymous"; // 예외 처리
