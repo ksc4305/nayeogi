@@ -4,7 +4,7 @@ import com.ssafy.nayeogi.common.exception.CustomException;
 import com.ssafy.nayeogi.common.exception.ErrorCode;
 import com.ssafy.nayeogi.image.service.ImageService;
 import com.ssafy.nayeogi.story.model.dao.StoryDao;
-import com.ssafy.nayeogi.story.model.dto.StoryAIRequest;
+import com.ssafy.nayeogi.story.model.dto.StoryAiRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryDetailResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryListResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryPlanDetailResponse;
@@ -34,7 +34,7 @@ public class StoryServiceImpl implements StoryService {
     private final ImageService imageService;
     @Override
     @Transactional
-    public int generateAndSaveStory(StoryAIRequest request, String memberId) {
+    public int generateAndSaveStory(StoryAiRequest request, String memberId) {
     	if (memberId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_MEMBER);
         }

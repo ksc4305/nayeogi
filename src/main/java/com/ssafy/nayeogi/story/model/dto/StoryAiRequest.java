@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Data
 @Schema(description = "AI 스토리 생성 요청 DTO")
-public class AiStoryRequest {
+public class StoryAiRequest {
 
     @Schema(description = "스토리 제목", example = "우정 가득 제주도 3박 4일 여행")
     private String storyTitle;
