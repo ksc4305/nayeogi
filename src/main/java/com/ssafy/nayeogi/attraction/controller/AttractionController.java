@@ -40,9 +40,10 @@ public class AttractionController {
 	}
 
 	@GetMapping("/attractions")
-	public ResponseEntity<List<AttractionResponse>> searchAttractions(@RequestParam(required = false) String title, 
-			@RequestParam(required = false) Integer contentTypeId) {
-		List<AttractionResponse> attractions = attractionService.searchAttractions(title, contentTypeId);
+	public ResponseEntity<List<AttractionResponse>> searchAttractions(@RequestParam(required = false) String title,
+		@RequestParam(name = "contentTypeId", required = false) List<Integer> contentTypeIds) {
+
+		List<AttractionResponse> attractions = attractionService.searchAttractions(title, contentTypeIds);
 		return ResponseEntity.ok(attractions);
 	}
 	@PostMapping("/plans")

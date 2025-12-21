@@ -13,7 +13,7 @@ import com.ssafy.nayeogi.attraction.model.dto.SurveyResponse;
 
 public interface AttractionService {
 
-	List<AttractionResponse> searchAttractions(String title, Integer contentTypeId);
+	List<AttractionResponse> searchAttractions(String title, List<Integer> contentTypeIds);
 
 	Integer createPlan(PlanCreateRequest request);
 

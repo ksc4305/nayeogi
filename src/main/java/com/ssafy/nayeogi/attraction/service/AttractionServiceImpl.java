@@ -24,8 +24,8 @@ public class AttractionServiceImpl implements AttractionService {
 	private final AttractionDao attractionDao;
 
 	@Override
-	public List<AttractionResponse> searchAttractions(String title, Integer contentTypeId) {
-		return attractionDao.searchAttractions(title, contentTypeId);
+	public List<AttractionResponse> searchAttractions(String title, List<Integer> contentTypeIds) {
+		return attractionDao.searchAttractions(title, contentTypeIds);
 	}
 
 	@Override
@@ -85,7 +85,7 @@ public class AttractionServiceImpl implements AttractionService {
 	//추후 부분범위처리 가능
 	@Override
 	public List<AttractionRecommendationResponse> recommendAttractions(AttractionRecommendationRequest request) {
-		return attractionDao.recommendAttractions(request.getArea(), request.getSurveyIds());
+		return attractionDao.recommendAttractions(request.getArea(), request.getContentTypeId(), request.getSurveyIds());
 	}
 	
 }

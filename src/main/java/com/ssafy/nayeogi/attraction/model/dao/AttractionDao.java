@@ -18,7 +18,7 @@ import com.ssafy.nayeogi.attraction.model.dto.SurveyResponse;
 public interface AttractionDao {
 
 	List<AttractionResponse> searchAttractions(@Param("title") String title,
-		@Param("contentTypeId") Integer contentTypeId);
+		@Param("contentTypeIds") List<Integer> contentTypeIds);
 
 	int insertPlan(PlanCreateRequest request);
 
@@ -37,5 +37,6 @@ public interface AttractionDao {
 	List<SurveyResponse> findAllSurveys();
 
 	List<AttractionRecommendationResponse> recommendAttractions(@Param("area") String area,
+		@Param("contentTypeId") Integer contentTypeId,
 		@Param("surveyIds") List<Integer> surveyIds);
 }

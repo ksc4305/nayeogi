@@ -28,8 +28,11 @@
 			<if test="title != null and title != ''">
 				AND title LIKE CONCAT('%', #{title}, '%')
 			</if>
-			<if test="contentTypeId != null">
-				AND content_type_id = #{contentTypeId}
+			<if test="contentTypeIds != null and contentTypeIds.size() > 0">
+				AND content_type_id IN
+				<foreach collection="contentTypeIds" item="contentTypeId" open="(" separator="," close=")">
+					#{contentTypeId}
+				</foreach>
 			</if>
 		</where>
 		ORDER BY title ASC, id ASC
@@ -38,46 +41,61 @@
 	<select id="recommendAttractions"
 		parameterType="map"
 		resultType="AttractionRecommendationResponse">
-		SELECT 
-			a.id,
-			a.content_id,
-			a.title,
-			a.content_type_id,
-			a.area_code,
-			a.si_gun_gu_code,
-			a.first_image1,
-			a.first_image2,
-			a.map_level,
-			a.latitude,
-			a.longitude,
-			a.tel,
-			a.addr1,
-			a.addr2,
-			a.homepage,
-			a.overview,
+		SELECT /*+ NO_MERGE(b) JOIN_ORDER(b, a2) */
+			a2.id,
+			a2.content_id,
+			a2.title,
+			a2.content_type_id,
+			a2.area_code,
+			a2.si_gun_gu_code,
+			a2.first_image1,
+			a2.first_image2,
+			a2.map_level,
+			a2.latitude,
+			a2.longitude,
+			a2.tel,
+			a2.addr1,
+			a2.addr2,
+			a2.homepage,
+			a2.overview,
 			b.cal_score
-		FROM attractions a
-		JOIN (
-			SELECT 
+		FROM (
+			SELECT
 				a.id,
 				COALESCE(SUM(af.score * sfw.weight), 0) AS cal_score
-			FROM attractions a
-			JOIN sidos s
-			  ON s.sido_name = #{area}
-			 AND a.area_code = s.sido_code
+			FROM attractions a FORCE INDEX (attractions_content_type_id_area_code)
 			LEFT JOIN attraction_features af
-			  ON a.id = af.attraction_id
+			  ON af.attraction_id = a.id
 			LEFT JOIN survey_feature_weight sfw
-			  ON af.feature_id = sfw.attraction_features_id
-
-				  AND sfw.survey_id IN
-				  <foreach collection="surveyIds" item="surveyId" open="(" separator="," close=")">
-					  #{surveyId}
-				  </foreach>
-
+			  ON sfw.attraction_features_id = af.id
+			<choose>
+				<when test="surveyIds != null and surveyIds.size() > 0">
+					AND sfw.survey_id IN
+					<foreach collection="surveyIds" item="surveyId" open="(" separator="," close=")">
+						#{surveyId}
+					</foreach>
+				</when>
+				<otherwise>
+					AND 1 = 0
+				</otherwise>
+			</choose>
+			<where>
+				<if test="contentTypeId != null">
+					a.content_type_id = #{contentTypeId}
+				</if>
+				<if test="area != null and area != ''">
+					AND a.area_code = (
+						SELECT s.sido_code
+						FROM sidos s
+						WHERE s.sido_name = #{area}
+						LIMIT 1
+					)
+				</if>
+			</where>
 			GROUP BY a.id
 		) b
-		  ON a.id = b.id
+		JOIN attractions a2 FORCE INDEX (PRIMARY)
+		  ON a2.id = b.id
 		ORDER BY b.cal_score DESC
 	</select>
 
@@ -153,8 +171,7 @@
 		SELECT
 			id,
 			question,
-			type,
-			parent_id AS parentId
+			type
 		FROM survey
 		ORDER BY id ASC
 	</select>

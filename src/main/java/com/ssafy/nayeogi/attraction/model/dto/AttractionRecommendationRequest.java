@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class AttractionRecommendationRequest {
 
     private String area;
+    private Integer contentTypeId;
     private List<Integer> surveyIds;
 
     public List<Integer> getSurveyIds() {
