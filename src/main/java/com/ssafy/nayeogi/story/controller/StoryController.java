@@ -2,8 +2,10 @@ package com.ssafy.nayeogi.story.controller;
 
 import com.ssafy.nayeogi.common.dto.ApiResponseDto;
 import com.ssafy.nayeogi.member.model.dto.MemberDto;
+import com.ssafy.nayeogi.story.model.dto.StoryAIRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryDetailResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryListResponse;
+import com.ssafy.nayeogi.story.model.dto.StoryPlanDetailResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryPreviewRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryPreviewResponse;
 import com.ssafy.nayeogi.story.model.dto.StorySaveRequest;
@@ -32,25 +34,45 @@ public class StoryController {
 
     private final StoryService storyService;
 
-    @Operation(summary = "스토리북 저장", description = "완성된 이야기와 페이지들을 DB에 저장합니다.")
-    @PostMapping
-    public ResponseEntity<ApiResponseDto<StorySaveResponse>> saveStory(
-    		@RequestBody StorySaveRequest request,
-    		@AuthenticationPrincipal MemberDto memberDto
-    		) {
+//    @Operation(summary = "스토리북 저장", description = "완성된 이야기와 페이지들을 DB에 저장합니다.")
+//    @PostMapping
+//    public ResponseEntity<ApiResponseDto<StorySaveResponse>> saveStory(
+//    		@RequestBody StorySaveRequest request,
+//    		@AuthenticationPrincipal MemberDto memberDto
+//    		) {
+//        
+//    	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
+//    	
+//    	int storyId = storyService.saveStory(request, memberId);
+//        
+//        return ResponseEntity
+//                .status(HttpStatus.CREATED)
+//
+//                .body(ApiResponseDto.success("스토리북이 저장되었습니다.", new StorySaveResponse(storyId)));
+//    }
+    
+    /**
+     * AI 여행기 생성 및 자동 저장 (비공개 상태)
+     */
+    @Operation(summary = "AI 여행기 생성 요청 및 저장", description = "입력된 정보를 바탕으로 AI가 여행기를 작성하고 비공개 상태로 저장합니다.")
+    @PostMapping("/ai-generate")
+    public ResponseEntity<ApiResponseDto<StorySaveResponse>> generateAIStory(
+            @RequestBody StoryAIRequest request,
+            @AuthenticationPrincipal MemberDto memberDto // 로그인한 사용자 정보
+    ) {
+        String memberId = (memberDto != null) ? memberDto.getUserId() : "anonymous"; // 예외 처리
         
-    	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
-    	
-    	int storyId = storyService.saveStory(request, memberId);
-        
+        // 서비스 호출 -> 생성 후 저장된 ID 반환
+        int storyId = storyService.generateAndSaveStory(request, memberId);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponseDto.success("스토리북이 저장되었습니다.", new StorySaveResponse(storyId)));
     }
     
-    
     @Operation(summary = "내 스토리북 목록 조회", description = "내가 작성한 스토리북 리스트를 조회합니다.")
     @GetMapping
+
     public ResponseEntity<ApiResponseDto<List<StoryListResponse>>> getStoryList(
     		@AuthenticationPrincipal MemberDto memberDto,
             @RequestParam(required = false) Integer planId // 쿼리 파라미터 (?planId=101)
@@ -58,6 +80,7 @@ public class StoryController {
     	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
                 
     	List<StoryListResponse> response = storyService.getStoryList(memberId, planId);
+
         return ResponseEntity.ok(ApiResponseDto.success(response));
     }
     
@@ -123,6 +146,13 @@ public class StoryController {
         StoryPreviewResponse response = storyService.generateStoryPreview(request);
         
         return ResponseEntity.ok(ApiResponseDto.success("스토리 초안이 생성되었습니다.", response));
+    }
+    
+    @Operation(summary = "스토리 작성을 위한 계획 정보 조회", description = "특정 여행 계획의 정보를 스토리 생성 페이지 규격에 맞춰 조회합니다.")
+    @GetMapping("/plan-info/{planId}")
+    public ResponseEntity<ApiResponseDto<StoryPlanDetailResponse>> getPlanInfoForStory(@PathVariable int planId) {
+        StoryPlanDetailResponse response = storyService.getPlanDetailForStory(planId);
+        return ResponseEntity.ok(ApiResponseDto.success(response));
     }
 
 }

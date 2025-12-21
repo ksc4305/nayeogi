@@ -10,4 +10,5 @@ public class StorySaveResponse {
  
  @Schema(description = "생성된 스토리북 ID", example = "501")
  private int storyId;
+
 }

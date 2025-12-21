@@ -29,4 +29,6 @@ public class StoryListResponse {
     @Schema(description = "공개 여부", example = "true")
     private boolean isPublic;   // storybooks.is_public ('Y'/'N' -> boolean)
 
+    @Schema(description = "좋아요 수", example = "10")
+    private int hit;
 }

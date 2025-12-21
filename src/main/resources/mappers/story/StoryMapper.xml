@@ -4,63 +4,42 @@
 
 <mapper namespace="com.ssafy.nayeogi.story.model.dao.StoryDao">
 
-	<insert id="insertStorybook" parameterType="StorySaveRequest"
-		useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+	<insert id="insertStory" parameterType="StorySaveRequest"
+		useGeneratedKeys="true" keyProperty="storyId" keyColumn="id">
 		INSERT INTO storybooks (
 			plan_id, 
 			member_id, 
 			title, 
+			content,
 			thumbnail_path, 
 			is_public
 		) VALUES (
 			#{planId}, 
 			#{memberId}, 
-			#{title}, 
+			#{title},
+			#{content}, 
 			#{thumbnailPath}, 
-			CASE WHEN #{isPublic} = true THEN 'Y' ELSE 'N' END
+			#{isPublic}
 		)
 	</insert>
 	
-	<insert id="insertStoryPages">
-		INSERT INTO story_pages (
-			story_id, 
-			attraction_id, 
-			image_path, 
-			content,
-			page_order
-		) VALUES
-		<foreach collection="pages" item="page" separator="," index="idx">
-			(
-				#{storyId},
-				(SELECT id FROM attractions WHERE content_id = #{page.contentId}),
-				#{page.imagePath},
-				#{page.content},
-				#{idx} + 1
-			)
-		</foreach>
-	</insert>
-	
-	<update id="updateStorybook">
+	<update id="updateStory">
 		UPDATE storybooks
 		SET 
-			plan_id = #{request.planId},
-			title = #{request.title},
-			thumbnail_path = #{request.thumbnailPath},
-			is_public = CASE WHEN #{request.isPublic} = true THEN 'Y' ELSE 'N' END
-		WHERE id = #{storyId}
+			title = #{title},
+			content = #{content},
+			thumbnail_path = #{thumbnailPath},
+			is_public = #{isPublic}
+		WHERE id = #{storyId} AND member_id = #{memberId}
 	</update>
 	
 	<update id="updateStoryVisibility">
 		UPDATE storybooks
-		SET is_public = CASE WHEN #{isPublic} = true THEN 'Y' ELSE 'N' END
+		SET is_public = #{isPublic}
 		WHERE id = #{storyId}
 	</update>
 
-	<delete id="deleteStoryPages">
-		DELETE FROM story_pages WHERE story_id = #{storyId}
-	</delete>
-
-	<delete id="deleteStorybook">
+	<delete id="deleteStory">
 		DELETE FROM storybooks WHERE id = #{storyId}
 	</delete>
 
@@ -75,7 +54,7 @@
 			title,
 			DATE_FORMAT(created_at, '%Y-%m-%d') AS createdDate,
 			thumbnail_path AS thumbnailPath,
-			CASE WHEN is_public = 'Y' THEN true ELSE false END AS isPublic
+			is_public AS isPublic
 		FROM storybooks
 		WHERE member_id = #{memberId}
 		
@@ -86,46 +65,62 @@
 		ORDER BY created_at DESC
 	</select>
 	
-	<resultMap id="StoryDetailMap" type="StoryDetailResponse" >
-		<id column="story_id" property="storyId"/>
-		<result column="plan_id" property="planId"/>
-		<result column="title" property="title"/>
-		<result column="member_id" property="memberId"/>
-		<result column="created_date" property="createdDate"/>
-		<result column="is_public" property="isPublic"/>
-		
-		<collection property="pages" ofType="StoryPageDetail">
-			<id column="page_id" property="pageId"/>
-			<result column="page_order" property="pageOrder"/>
-			<result column="image_path" property="imagePath"/>
-			<result column="content" property="content"/>
-			<result column="attraction_title" property="attractionTitle"/>
-			<result column="content_id" property="contentId"/>
-		</collection>
-	</resultMap>
 
-	<select id="selectStoryDetail" resultMap="StoryDetailMap">
-		SELECT 
-			s.id AS story_id,
-			s.plan_id,
-			s.title,
-			s.member_id,
-			DATE_FORMAT(s.created_at, '%Y-%m-%d') AS created_date,
-			CASE WHEN s.is_public = 'Y' THEN true ELSE false END AS is_public,
-			
-			sp.id AS page_id,
-			sp.page_order,
-			sp.image_path,
-			sp.content,
-			
-			a.title AS attraction_title,
-			a.content_id
-		FROM storybooks s
-		LEFT JOIN story_pages sp ON s.id = sp.story_id
-		LEFT JOIN attractions a ON sp.attraction_id = a.id
-		WHERE s.id = #{storyId}
-		ORDER BY sp.page_order ASC
-	</select>
+<select id="selectStoryDetail" resultType="StoryDetailResponse">
+    SELECT 
+        s.id AS storyId,
+        s.plan_id AS planId,
+        s.title,
+        s.content,
+        s.member_id AS memberId,
+        COALESCE(m.name, '알 수 없음') AS writerName,  
+        DATE_FORMAT(s.created_at, '%Y-%m-%d') AS createdDate,
+        s.thumbnail_path AS thumbnailPath,
+        s.is_public AS isPublic,
+        s.hit
+    FROM storybooks s
+    LEFT JOIN members m ON s.member_id = m.id  
+    WHERE s.id = #{storyId}
+</select>
 	
+	<resultMap id="storyPlanDetailMap" type="com.ssafy.nayeogi.story.model.dto.StoryPlanDetailResponse">
+    <id property="id" column="plan_id"/>
+    <result property="title" column="plan_title"/>
+    <result property="startDate" column="start_date"/>
+    <result property="endDate" column="end_date"/>
+    <result property="description" column="plan_description"/>
+
+    <collection property="details" ofType="com.ssafy.nayeogi.story.model.dto.StoryPlanDetailResponse$DetailDto">
+        <result property="planDate" column="plan_date"/>
+        <result property="sequence" column="sequence"/>
+        <association property="attraction" javaType="com.ssafy.nayeogi.story.model.dto.StoryPlanDetailResponse$AttractionDto">
+            <id property="id" column="attraction_id"/>
+            <result property="title" column="attraction_title"/>
+        </association>
+    </collection>
+</resultMap>
+
+<select id="selectPlanDetailForStory" parameterType="int" resultMap="storyPlanDetailMap">
+    SELECT
+        p.id as plan_id,
+        p.title as plan_title,
+        p.start_date,
+        p.end_date,
+        p.description as plan_description,
+        pd.plan_date,
+        pd.sequence,
+        a.id as attraction_id,
+        a.title as attraction_title
+    FROM
+        plans p
+    LEFT JOIN
+        plan_details pd ON p.id = pd.plan_id
+    LEFT JOIN
+        attractions a ON pd.attraction_id = a.id
+    WHERE
+        p.id = #{planId}
+    ORDER BY
+        pd.plan_date, pd.sequence;
+</select>
 
 </mapper>

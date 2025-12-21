@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class S3ImageService implements ImageService {
+public class ImageServiceImpl implements ImageService {
 
     private final S3Template s3Template;
 
@@ -32,7 +32,7 @@ public class S3ImageService implements ImageService {
 
             String originalName = file.getOriginalFilename();
             String extension = FilenameUtils.getExtension(originalName);
-            String s3Key = UUID.randomUUID() + "." + extension; // 중복 방지 파일명
+            String s3Key = "temp-uploads/" + UUID.randomUUID() + "." + extension; // 중복 방지 파일명
 
             try {
                 // S3에 업로드
@@ -48,6 +48,34 @@ public class S3ImageService implements ImageService {
         }
         return imageUrls;
     }
+    
+    @Override
+    public String moveImageToPermanent(String tempImageUrl) {
+	   String tempKey = extractKeyFromUrl(tempImageUrl);
+	    
+	    // "temp-uploads/" prefix가 없거나, 이미 영구 경로에 있는 경우, 원본 URL 그대로 반환
+	    if (!tempKey.startsWith("temp-uploads/")) {
+	        return tempImageUrl;
+	    }
+	    
+	    // 1. 새 영구 경로 키 생성
+	    String permanentKey = tempKey.replace("temp-uploads/", "permanent-media/");
+	    
+	    try {
+	        // 2. 임시 경로 -> 영구 경로로 객체 복사
+//	        s3Template.copyObject(bucketName, tempKey, bucketName, permanentKey);
+	    
+	        // 3. 임시 경로의 원본 객체 삭제
+	        s3Template.deleteObject(bucketName, tempKey);
+	    
+	        // 4. 새로운 영구 URL 생성 및 반환
+	        return "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + permanentKey;
+	    
+	    } catch (Exception e) {
+	        throw new RuntimeException("파일 영구 저장 실패: " + tempImageUrl, e);
+	    }
+    }
+    
 
     @Override
     public void delete(String imageUrl) {

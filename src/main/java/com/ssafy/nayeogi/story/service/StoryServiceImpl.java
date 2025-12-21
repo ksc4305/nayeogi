@@ -2,51 +2,137 @@ package com.ssafy.nayeogi.story.service;
 
 import com.ssafy.nayeogi.common.exception.CustomException;
 import com.ssafy.nayeogi.common.exception.ErrorCode;
+import com.ssafy.nayeogi.image.service.ImageService;
 import com.ssafy.nayeogi.story.model.dao.StoryDao;
+import com.ssafy.nayeogi.story.model.dto.StoryAIRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryDetailResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryListResponse;
+import com.ssafy.nayeogi.story.model.dto.StoryPlanDetailResponse;
 import com.ssafy.nayeogi.story.model.dto.StoryPreviewRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryPreviewResponse;
 import com.ssafy.nayeogi.story.model.dto.StorySaveRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryUpdateRequest;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.print.attribute.standard.Media;
+
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.util.MimeTypeUtils;
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoryServiceImpl implements StoryService {
 
     private final StoryDao storyDao;
+    private final ImageService imageService;
     @Override
     @Transactional
-    public int saveStory(StorySaveRequest request, String memberId) {
+    public int generateAndSaveStory(StoryAIRequest request, String memberId) {
     	if (memberId == null) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_MEMBER);
         }
+    	
+    	// 1. 시스템 프롬프트: "마크다운으로 써줘"
+        String systemText = """
+            당신은 여행 전문 에세이 작가입니다. 
+            사용자의 여행 기록을 바탕으로 블로그 포스팅을 작성해주세요.
+            
+            [작성 규칙]
+            1. **Markdown(마크다운) 형식**으로만 작성하세요. (HTML 태그 금지)
+            2. 제목은 '# ', 소제목은 '## ', '### ' 문법을 사용하세요.
+            3. 중요한 단어는 '**강조**' 처리하세요.
+            4. 글의 흐름을 자연스럽게 이어주세요.
+            """;
+    	
+//        StringBuilder userText = new StringBuilder();
+//        userText.append(String.format("제목: %s, 동행: %s, 분위기: %s, 계절: %s\n", 
+//                request.getStoryTitle(), request.getCompanions(), request.getTones(), request.getStoryDays()));
+//
+//        // 2. 멀티모달 데이터 준비 (이미지 리스트 만들기)
+//        List<Media> mediaList = new ArrayList<>();
+//
+//        for (StoryAIRequest.StoryDayDto day : request.getDays()) {
+//            userText.append(String.format("\n[Day %d] %s\n", day.getDayNum(), day.getDate()));
+//            
+//            for (StoryAIRequest.StorySectionDto section : day.getSections()) {
+//                userText.append(String.format("- 장소: %s (날씨: %s, 분위기: %s)\n  메모: %s\n", 
+//                        section.getPlaceName(), section.getWeather(), section.getAtmosphere(), section.getContent()));
+//
+//                // 이미지 URL이 있다면 Media 객체로 변환하여 리스트에 추가
+//                if (section.getImageUrls() != null) {
+//                    for (String url : section.getImageUrls()) {
+//                        try {
+//                            // S3 URL을 Resource로 변환
+////                            mediaList.add(new Media(MimeTypeUtils.IMAGE_JPEG, new UrlResource(url)));
+//                            // AI가 어떤 이미지가 어떤 장소 것인지 알 수 있게 텍스트 힌트 추가
+//                            userText.append(String.format("  (참고 이미지 URL: %s)\n", url));
+//                        } catch (Exception e) {
+//                            log.error("이미지 로드 실패: {}", url);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+        // 1. AI 호출 (Gemini 2.5 Pro)
+        // UserMessage에 텍스트와 미디어 리스트를 함께 담음
+//        UserMessage userMessage = new UserMessage(systemText + "\n\n" + userText.toString(), mediaList);
+    	// 2. AI 호출
+//        String aiMarkdownText = chatClient.prompt(new Prompt(userMessage)).call().content();
+    	
+    	// 3. [핵심] 이미지 병합 (Merge) - 마크다운 이미지 문법 활용
+        // 문법: ![이미지설명](이미지URL)
+        
+        StringBuilder finalContent = new StringBuilder();
+//        finalContent.append(aiMarkdownText).append("\n\n");
+        
+        finalContent.append("## 📸 여행 사진첩\n"); // 사진 섹션 헤더
+        
+//        List<String> finalImageUrls = new ArrayList<>();
+//       
+//            // 프론트에서 받은 이미지 URL 목록을 순회
+//            for (String imageUrl : request.getDays().get(1).getSections().get(1).getImageUrls()) {
+//                // [수정] imageService를 통해 파일을 영구 폴더로 이동시키고, 최종 URL을 받음
+//                String permanentUrl = imageService.moveImageToPermanent(imageUrl);
+//                finalImageUrls.add(permanentUrl);
+//            }
+        
+        // 모든 날짜의 이미지를 하단에 갤러리처럼 추가하거나, 
+        // 혹은 AI가 텍스트 중간에 넣을 수 있게 'PLACEHOLDER'를 쓰는 방법도 있음.
+        // 여기서는 가장 쉬운 '하단 배치' 예시입니다.
+//    	for (var day : request.getDays()) {
+//            for (var section : day.getSections()) {
+//                if (section.getImageUrls() != null) {
+//                    for (String url : section.getImageUrls()) {
+//                        // 마크다운 이미지 문법으로 변환하여 추가
+//                        finalContent.append(String.format("![%s](%s)\n", section.getPlaceName(), url));
+//                    }
+//                }
+//            }
+//        }
+    	
+    	StorySaveRequest saveRequest = new StorySaveRequest();
     	// 1. 작성자 ID 설정
-        request.setMemberId(memberId);
-
+    	saveRequest.setMemberId(memberId);
+//    	saveRequest.setTitle(request.getTitle());
+//    	saveRequest.setContent(finalContent.toString()); // 마크다운 문자열 저장
+//    	saveRequest.setThumbnailPath(request.getDays().get(0).getSections().get(0).getImageUrls().get(0)); // 첫 번째 사진을 썸네일로
         // 2. 스토리북 메인 저장 (DTO의 id 필드에 PK가 담김)
-        storyDao.insertStorybook(request);
+        storyDao.insertStory(saveRequest);
         
         // 3. PK 확인 (저장 실패 시 0)
-        int storyId = request.getId();
+        int storyId = saveRequest.getStoryId();
         if (storyId == 0) {
             throw new CustomException(ErrorCode.SERVER_ERROR);
         }
-
-        // 4. 페이지가 있다면 일괄 저장
-        if (request.getPages() != null && !request.getPages().isEmpty()) {
-            storyDao.insertStoryPages(storyId, request.getPages());
-        }
         
-        return storyId;
+        return saveRequest.getStoryId();
     }
     
     
@@ -95,16 +181,8 @@ public class StoryServiceImpl implements StoryService {
     	}
     	
     	// 2. 스토리북 메인 정보 수정
-    	storyDao.updateStorybook(storyId, request);
-    	
-    	// 3. 기존 페이지들 모두 삭제 (갈아엎기 전략)
-    	storyDao.deleteStoryPages(storyId);
-    	
-    	// 4. 새 페이지들 입력
-    	if (request.getPages() != null && !request.getPages().isEmpty()) {
-    		// 기존 insertStoryPages 메서드 재사용!
-    		storyDao.insertStoryPages(storyId, request.getPages());
-    	}
+    	storyDao.updateStory(storyId, request);
+
     }
     
     @Override
@@ -122,12 +200,9 @@ public class StoryServiceImpl implements StoryService {
     		throw new CustomException(ErrorCode.FORBIDDEN_ACCESS);
     	}
     	
-    	// 2. 삭제 (DB의 ON DELETE CASCADE 덕분에 story_pages도 자동 삭제됨)
-    	storyDao.deleteStorybook(storyId);
-    	
-    	// ※ 만약 S3에 올라간 이미지 파일도 같이 지워야 한다면?
-    	// 여기서 story_pages를 조회해서 imagePath를 얻은 뒤 ImageService.delete()를 호출해야 합니다.
-    	// 현재는 DB 데이터만 삭제합니다.
+    	// 2. 삭제
+    	storyDao.deleteStory(storyId);
+
     }
     
     @Override
@@ -182,6 +257,11 @@ public class StoryServiceImpl implements StoryService {
         }
 
         return new StoryPreviewResponse(generatedPages);
+    }
+    
+    @Override
+    public StoryPlanDetailResponse getPlanDetailForStory(int planId) {
+        return storyDao.selectPlanDetailForStory(planId);
     }
 
 }
