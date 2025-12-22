@@ -25,8 +25,14 @@ public enum ErrorCode {
     FILE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."), 
     
     // 4. 스토리 관련 (STORY_)
-    STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 스토리입니다.");
+    STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 스토리입니다."), 
     
+    // 5. 여행 계획 관련 (PLAN_)
+ // DB에 해당 ID의 계획이 없을 때 (404)
+    PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 여행 계획입니다."),
+    // ID 값이 0이거나 음수일 때, 혹은 필수 값이 누락되었을 때 (400)
+    PLAN_ID_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 여행 계획 ID입니다.");
+	
 private final HttpStatus httpStatus;
     private final String message;
     

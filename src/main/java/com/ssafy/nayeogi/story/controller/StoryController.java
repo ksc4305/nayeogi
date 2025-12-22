@@ -34,23 +34,6 @@ public class StoryController {
 
     private final StoryService storyService;
 
-//    @Operation(summary = "스토리북 저장", description = "완성된 이야기와 페이지들을 DB에 저장합니다.")
-//    @PostMapping
-//    public ResponseEntity<ApiResponseDto<StorySaveResponse>> saveStory(
-//    		@RequestBody StorySaveRequest request,
-//    		@AuthenticationPrincipal MemberDto memberDto
-//    		) {
-//        
-//    	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
-//    	
-//    	int storyId = storyService.saveStory(request, memberId);
-//        
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//
-//                .body(ApiResponseDto.success("스토리북이 저장되었습니다.", new StorySaveResponse(storyId)));
-//    }
-    
     /**
      * AI 여행기 생성 및 자동 저장 (비공개 상태)
      */
@@ -60,7 +43,7 @@ public class StoryController {
             @RequestBody AiStoryRequest request,
             @AuthenticationPrincipal MemberDto memberDto // 로그인한 사용자 정보
     ) {
-        String memberId = (memberDto != null) ? memberDto.getUserId() : "anonymous"; // 예외 처리
+    	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
         
         // 서비스 호출 -> 생성 후 저장된 ID 반환
         int storyId = storyService.generateAndSaveStory(request, memberId);
@@ -139,14 +122,6 @@ public class StoryController {
         return ResponseEntity.ok(ApiResponseDto.success("공개 여부가 변경되었습니다."));
     }
     
-    @Operation(summary = "AI 스토리 초안 생성", description = "여행 계획과 메모를 분석하여 스토리 초안을 생성합니다.")
-    @PostMapping("/previews") public ResponseEntity<ApiResponseDto<StoryPreviewResponse>> generateStoryPreview(
-            @RequestBody StoryPreviewRequest request
-    ) {
-        StoryPreviewResponse response = storyService.generateStoryPreview(request);
-        
-        return ResponseEntity.ok(ApiResponseDto.success("스토리 초안이 생성되었습니다.", response));
-    }
     
     @Operation(summary = "스토리 작성을 위한 계획 정보 조회", description = "특정 여행 계획의 정보를 스토리 생성 페이지 규격에 맞춰 조회합니다.")
     @GetMapping("/plan-info/{planId}")
