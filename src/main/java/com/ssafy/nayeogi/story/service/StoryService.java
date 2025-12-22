@@ -38,4 +38,5 @@ public interface StoryService {
     void changeVisibility(int storyId, boolean isPublic, String memberId);
 
     StoryPlanDetailResponse getPlanDetailForStory(int planId);
+
 }

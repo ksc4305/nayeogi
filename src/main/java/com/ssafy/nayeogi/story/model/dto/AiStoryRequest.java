@@ -62,4 +62,5 @@ public class AiStoryRequest {
         @Schema(description = "선택된 태그 목록 (장소 분위기)", example = "[\"공항\", \"바람 많음\"]")
         private List<String> selectedTags;
     }
+
 }
