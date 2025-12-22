@@ -67,7 +67,7 @@
 			LEFT JOIN attraction_features af
 			  ON af.attraction_id = a.id
 			LEFT JOIN survey_feature_weight sfw
-			  ON sfw.attraction_features_id = af.id
+			  ON sfw.attraction_features_id = af.feature_id
 			<choose>
 				<when test="surveyIds != null and surveyIds.size() > 0">
 					AND sfw.survey_id IN
