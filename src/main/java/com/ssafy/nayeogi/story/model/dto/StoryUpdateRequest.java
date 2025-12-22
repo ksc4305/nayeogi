@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-@Schema(description = "스토리북 수정 요청 DTO")
+@Schema(description = "스토리 수정 요청 DTO")
 public class StoryUpdateRequest {
     
     @Schema(description = "수정할 제목", example = "나의 부산 여행 (수정본)")

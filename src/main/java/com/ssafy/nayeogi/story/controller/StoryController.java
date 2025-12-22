@@ -58,7 +58,6 @@ public class StoryController {
     
     @Operation(summary = "내 스토리북 목록 조회", description = "내가 작성한 스토리북 리스트를 조회합니다.")
     @GetMapping
-
     public ResponseEntity<ApiResponseDto<List<StoryListResponse>>> getStoryList(
     		@AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false) Integer planId // 쿼리 파라미터 (?planId=101)
