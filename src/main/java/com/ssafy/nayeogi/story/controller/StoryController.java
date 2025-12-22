@@ -1,6 +1,7 @@
 package com.ssafy.nayeogi.story.controller;
 
 import com.ssafy.nayeogi.common.dto.ApiResponseDto;
+import com.ssafy.nayeogi.common.security.CustomUserDetails;
 import com.ssafy.nayeogi.member.model.dto.MemberDto;
 import com.ssafy.nayeogi.story.model.dto.AiStoryRequest;
 import com.ssafy.nayeogi.story.model.dto.StoryDetailResponse;
@@ -41,13 +42,15 @@ public class StoryController {
     @PostMapping("/ai-generate")
     public ResponseEntity<ApiResponseDto<StorySaveResponse>> generateAIStory(
             @RequestBody AiStoryRequest request,
-            @AuthenticationPrincipal MemberDto memberDto // 로그인한 사용자 정보
+    		@AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+    	MemberDto memberDto = userDetails.getMemberDto();
+
     	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
-        
+//        log.debug("memberId: {}", memberDto.getUserId());
         // 서비스 호출 -> 생성 후 저장된 ID 반환
         int storyId = storyService.generateAndSaveStory(request, memberId);
-
+        
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponseDto.success("스토리북이 저장되었습니다.", new StorySaveResponse(storyId)));
@@ -57,9 +60,11 @@ public class StoryController {
     @GetMapping
 
     public ResponseEntity<ApiResponseDto<List<StoryListResponse>>> getStoryList(
-    		@AuthenticationPrincipal MemberDto memberDto,
+    		@AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false) Integer planId // 쿼리 파라미터 (?planId=101)
     ) {
+    	MemberDto memberDto = userDetails.getMemberDto();
+
     	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
                 
     	List<StoryListResponse> response = storyService.getStoryList(memberId, planId);
@@ -71,8 +76,9 @@ public class StoryController {
     @GetMapping("/{storyId}")
     public ResponseEntity<ApiResponseDto<StoryDetailResponse>> getStoryDetail(
             @PathVariable int storyId,
-    		@AuthenticationPrincipal MemberDto memberDto
+    		@AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+    	MemberDto memberDto = userDetails.getMemberDto();
         // 로그인 안 했으면 null (비공개 글 조회 시 튕겨내기 위함)
     	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
         
@@ -86,8 +92,10 @@ public class StoryController {
     public ResponseEntity<ApiResponseDto<Void>> modifyStory(
             @PathVariable int storyId,
             @RequestBody StoryUpdateRequest request,
-    		@AuthenticationPrincipal MemberDto memberDto
+    		@AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+    	MemberDto memberDto = userDetails.getMemberDto();
+
     	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
         
         storyService.modifyStory(storyId, request, memberId);
@@ -99,8 +107,10 @@ public class StoryController {
     @DeleteMapping("/{storyId}")
     public ResponseEntity<ApiResponseDto<Void>> deleteStory(
             @PathVariable int storyId,
-    		@AuthenticationPrincipal MemberDto memberDto
+    		@AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+    	MemberDto memberDto = userDetails.getMemberDto();
+
     	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
         
         storyService.deleteStory(storyId, memberId);
@@ -113,8 +123,10 @@ public class StoryController {
     public ResponseEntity<ApiResponseDto<Void>> changeVisibility(
             @PathVariable int storyId,
             @RequestBody StoryVisibilityRequest request,
-    		@AuthenticationPrincipal MemberDto memberDto
+    		@AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+    	MemberDto memberDto = userDetails.getMemberDto();
+
     	String memberId = (memberDto != null) ? memberDto.getUserId() : null;        
         
         storyService.changeVisibility(storyId, request.isPublic(), memberId);

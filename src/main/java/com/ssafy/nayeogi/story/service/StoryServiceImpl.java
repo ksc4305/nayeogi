@@ -54,6 +54,7 @@ public class StoryServiceImpl implements StoryService {
         String finalTones = (rawTones == null || rawTones.isEmpty()) ? "감성적인" : rawTones;
         String finalCompanions = (rawCompanions == null || rawCompanions.isEmpty()) ? "나 자신" : rawCompanions;
         
+        log.debug("글의 분위기: {}, 동행: {}", finalTones, finalCompanions);
         // 2. AI에게 전달할 유저 메시지(여행 정보) 구성
         String userContext = buildUserContext(request);
         log.info("AI 요청 컨텍스트: {}", userContext);
@@ -133,12 +134,13 @@ public class StoryServiceImpl implements StoryService {
         StringBuilder sb = new StringBuilder();
         sb.append("여행 제목: ").append(request.getStoryTitle()).append("\n");
         sb.append("기간: ").append(request.getStartDate()).append(" ~ ").append(request.getEndDate()).append("\n");
-
+        
         for (AiStoryRequest.DayDto day : request.getStoryDays()) {
             sb.append("[Day ").append(day.getDayNum()).append("]\n");
+            sb.append("날씨").append(String.join(", ", day.getWeather())).append("\n");
             for (AiStoryRequest.SectionDto section : day.getSections()) {
                 sb.append("- 장소: ").append(section.getPlaceName()).append("\n");
-                sb.append("  방문 메모: ").append(section.getContent()).append("\n");
+                sb.append("  간단 메모: ").append(section.getContent()).append("\n");
                 if (section.getSelectedTags() != null && !section.getSelectedTags().isEmpty()) {
                     sb.append("  분위기 태그: ").append(String.join(", ", section.getSelectedTags())).append("\n");
                 }
