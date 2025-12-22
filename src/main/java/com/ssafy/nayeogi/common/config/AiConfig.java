@@ -17,7 +17,7 @@ import com.google.genai.Client;
 import com.google.genai.types.HttpOptions;
 
 @Configuration
-public class AiConfiguration {
+public class AiConfig {
 
     @Value("${spring.ai.google.genai.api-key}")
     private String genAiApiKey;
