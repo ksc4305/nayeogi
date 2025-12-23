@@ -54,7 +54,7 @@ public class StoryServiceImpl implements StoryService {
     private final ChatClient chatClient;
     private final TransactionTemplate transactionTemplate;
     
-    @Value("classpath:/prompts/default_system_prompt.txt")
+    @Value("classpath:/prompts/test.txt")
     private Resource systemPrompt;
 
     // AI 분석에 사용할 최대 이미지 수 (안전하게 6장 제한)
