@@ -1,3 +1,4 @@
+
 -- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
 -- Host: localhost    Database: trip_dummy
@@ -417,7 +418,7 @@ CREATE TABLE `survey` (
 
 LOCK TABLES `survey` WRITE;
 /*!40000 ALTER TABLE `survey` DISABLE KEYS */;
-INSERT INTO `survey` VALUES (1,'Topic 1','SVD'),(2,'Topic 2','SVD'),(3,'Topic 3','SVD'),(4,'Topic 4','SVD'),(5,'Topic 5','SVD'),(6,'Topic 6','SVD'),(7,'Topic 7','SVD'),(8,'Topic 8','SVD'),(9,'Topic 9','SVD'),(10,'Topic 10','SVD'),(11,'Topic 11','SVD'),(12,'Topic 12','SVD'),(13,'Topic 13','SVD'),(14,'Topic 14','SVD'),(15,'Topic 15','SVD'),(16,'Topic 16','SVD'),(17,'Topic 17','SVD'),(18,'Topic 18','SVD'),(19,'Topic 19','SVD'),(20,'Topic 20','SVD');
+INSERT INTO `survey` VALUES (2,'쩝쩝박사','SVD'),(3,'감성한스푼','SVD'),(4,'도란도란','SVD'),(5,'빵지순례','SVD'),(7,'뷰맛집','SVD'),(8,'육식파','SVD'),(10,'스케일맛집','SVD'),(11,'무드맛집','SVD'),(14,'렛츠플레이','SVD'),(19,'사부작걷기','SVD');
 /*!40000 ALTER TABLE `survey` ENABLE KEYS */;
 UNLOCK TABLES;
 
