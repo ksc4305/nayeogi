@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Data
 @NoArgsConstructor
 @Schema(description = "스토리 수정 요청 DTO")
@@ -20,6 +22,7 @@ public class StoryUpdateRequest {
     private String thumbnailPath;
     
     @Schema(description = "공개 여부", example = "true")
+    @JsonProperty("isPublic")
     private boolean isPublic;
     
 }

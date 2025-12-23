@@ -49,20 +49,22 @@
 	
 	<select id="selectStoryList" resultType="StoryListResponse">
 		SELECT 
-			id AS storyId,
-			plan_id AS planId,
-			title,
-			DATE_FORMAT(created_at, '%Y-%m-%d') AS createdDate,
-			thumbnail_path AS thumbnailPath,
-			is_public AS isPublic
-		FROM storybooks
-		WHERE member_id = #{memberId}
+			s.id AS storyId,
+			s.plan_id AS planId,
+			p.title AS planTitle,
+			s.title,
+			DATE_FORMAT(s.created_at, '%Y-%m-%d') AS createdDate,
+			s.thumbnail_path AS thumbnailPath,
+			s.is_public AS isPublic
+		FROM storybooks s
+		LEFT JOIN plans p ON s.plan_id = p.id
+		WHERE s.member_id = #{memberId}
 		
 		<if test="planId != null and planId != 0">
-			AND plan_id = #{planId}
+			AND s.plan_id = #{planId}
 		</if>
 		
-		ORDER BY created_at DESC
+		ORDER BY s.created_at DESC
 	</select>
 	
 

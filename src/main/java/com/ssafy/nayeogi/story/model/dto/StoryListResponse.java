@@ -1,5 +1,7 @@
 package com.ssafy.nayeogi.story.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +19,9 @@ public class StoryListResponse {
     @Schema(description = "여행 계획 ID", example = "101")
     private int planId;         // storybooks.plan_id
     
+    @Schema(description = "여행 계획 제목", example = "부산 2박 3일 여행")
+    private String planTitle;   // plans.title
+
     @Schema(description = "제목", example = "나의 부산 여행")
     private String title;       // storybooks.title
     
@@ -27,6 +32,7 @@ public class StoryListResponse {
     private String thumbnailPath; // storybooks.thumbnail_path
     
     @Schema(description = "공개 여부", example = "true")
+    @JsonProperty("isPublic")
     private boolean isPublic;   // storybooks.is_public ('Y'/'N' -> boolean)
 
     @Schema(description = "좋아요 수", example = "10")
