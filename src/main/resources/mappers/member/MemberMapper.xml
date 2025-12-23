@@ -55,6 +55,9 @@
 			<if test="userName != null and userName != ''">
 				name = #{userName},
 			</if>
+			<if test="email != null and email != ''">
+				email = #{email},
+			</if>
 			</set>
 		WHERE id = #{userId}
 	</update>
