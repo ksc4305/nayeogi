@@ -17,13 +17,33 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.Map;
 
-
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.content.Media;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,8 +53,14 @@ public class StoryServiceImpl implements StoryService {
     private final ImageService imageService;
     private final ChatClient chatClient;
     private final TransactionTemplate transactionTemplate;
-    @Value("classpath:/prompts/default_system_prompt.txt")
+    
+    @Value("classpath:/prompts/test.txt")
     private Resource systemPrompt;
+
+    // AI 분석에 사용할 최대 이미지 수 (안전하게 6장 제한)
+    private static final int MAX_TOTAL_ANALYSIS_IMAGES = 8;
+    // AI Vision 모델 표준 입력 크기 근사치 (224~256px이면 분석 충분, 용량 최소화)
+    private static final int TARGET_IMAGE_WIDTH = 256; 
     
     @Override
     public int generateAndSaveStory(AiStoryRequest request, String memberId) {
@@ -48,25 +74,122 @@ public class StoryServiceImpl implements StoryService {
     
     private String generateAiContent(AiStoryRequest request) {
     	// 1. 파라미터 준비 (동행자, 분위기)
-        String rawTones = String.join(", ", request.getTones());
-        String rawCompanions = String.join(", ", request.getCompanions());
+        String rawTones = (request.getTones() != null) ? String.join(", ", request.getTones()) : "";
+        String rawCompanions = (request.getCompanions() != null) ? String.join(", ", request.getCompanions()) : "";
         
-        String finalTones = (rawTones == null || rawTones.isEmpty()) ? "감성적인" : rawTones;
-        String finalCompanions = (rawCompanions == null || rawCompanions.isEmpty()) ? "나 자신" : rawCompanions;
+        String finalTones = (rawTones.isEmpty()) ? "감성적인" : rawTones;
+        String finalCompanions = (rawCompanions.isEmpty()) ? "나 자신" : rawCompanions;
         
-        log.debug("글의 분위기: {}, 동행: {}", finalTones, finalCompanions);
+        log.debug(">> AI 생성 요청 정보 - 분위기: [{}], 동행: [{}]", finalTones, finalCompanions);
+        
         // 2. AI에게 전달할 유저 메시지(여행 정보) 구성
         String userContext = buildUserContext(request);
-        log.info("AI 요청 컨텍스트: {}", userContext);
+
+        // 3. 이미지 리스트 추출 및 초경량 압축 (Vision 기능 활용)
+        List<Media> mediaList = extractAllImagesAsMedia(request);
+        log.info(">> AI 분석 요청 컨텐츠 구성 완료 (텍스트 길이: {}, 분석 이미지: {}개)", userContext.length(), mediaList.size());
 
         // AI 호출
-        log.info("AI 스토리 생성 시작...");
+        log.info("AI 스토리 생성 시작 (Gemini Multimodal)...");
         return chatClient.prompt()
                 .system(sp -> sp.text(systemPrompt)
                         .params(Map.of("tones", finalTones, "companions", finalCompanions)))
-                .user(userContext)
+                .user(u -> u.text(userContext).media(mediaList.toArray(new Media[0])))
                 .call()
                 .content();
+    }
+
+    // 모든 이미지 URL을 Media 객체로 변환 (리사이징 및 개수 제한 적용)
+    private List<Media> extractAllImagesAsMedia(AiStoryRequest request) {
+        List<Media> mediaList = new ArrayList<>();
+        List<String> allImageUrls = new ArrayList<>();
+        
+        // 1. 일단 모든 이미지 URL 수집
+        if (request.getStoryDays() != null) {
+            for (var day : request.getStoryDays()) {
+                if (day.getSections() != null) {
+                    for (var section : day.getSections()) {
+                        if (section.getImageUrls() != null) {
+                            allImageUrls.addAll(section.getImageUrls());
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 2. 최대 개수만큼 앞에서부터 자르기 (또는 고르게 분포시킬 수도 있음, 현재는 순차적)
+        // 장소가 1곳이어도 그곳의 사진을 최대 개수만큼 분석함
+        int targetCount = Math.min(allImageUrls.size(), MAX_TOTAL_ANALYSIS_IMAGES);
+        
+        // 3. 압축 및 변환
+        for (int i = 0; i < targetCount; i++) {
+            String url = allImageUrls.get(i);
+            try {
+                Resource compressedImage = compressImage(url);
+                if (compressedImage != null) {
+                    mediaList.add(new Media(MimeTypeUtils.IMAGE_JPEG, compressedImage));
+                }
+            } catch (Exception e) {
+                log.error("이미지 압축 및 로드 실패: {}", url, e);
+            }
+        }
+        
+        return mediaList;
+    }
+
+    // 이미지를 다운로드하여 256px로 리사이징하고 JPEG 품질 50%로 강력 압축
+    private Resource compressImage(String imageUrl) {
+        try (InputStream is = new URL(imageUrl).openStream();
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            
+            BufferedImage originalImage = ImageIO.read(is);
+            if (originalImage == null) return null;
+
+            // 1. 해상도 조절 (가로 256px 기준 비율 유지) - AI 인식엔 충분
+            int targetHeight = (int) (originalImage.getHeight() * ((double) TARGET_IMAGE_WIDTH / originalImage.getWidth()));
+            Image resultingImage = originalImage.getScaledInstance(TARGET_IMAGE_WIDTH, targetHeight, Image.SCALE_SMOOTH);
+            
+            BufferedImage outputImage = new BufferedImage(TARGET_IMAGE_WIDTH, targetHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics2D = outputImage.createGraphics();
+            graphics2D.drawImage(resultingImage, 0, 0, null);
+            graphics2D.dispose();
+
+            // 2. JPEG 압축 품질 명시적 설정 (0.5 = 50% 품질 -> 용량 대폭 감소)
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+            if (!writers.hasNext()) throw new IllegalStateException("No JPG writer found");
+            
+            ImageWriter writer = writers.next();
+            try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
+                writer.setOutput(ios);
+                ImageWriteParam param = writer.getDefaultWriteParam();
+                
+                if (param.canWriteCompressed()) {
+                    param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                    param.setCompressionQuality(0.5f); // 품질 50% 설정 (시각적으론 조금 깨져도 AI 분석엔 무방)
+                }
+                
+                writer.write(null, new IIOImage(outputImage, null, null), param);
+            } finally {
+                writer.dispose();
+            }
+            
+            byte[] imageBytes = baos.toByteArray();
+            log.debug("이미지 초경량 압축 완료: {} -> {} bytes", imageUrl, imageBytes.length);
+            
+            return new ByteArrayResource(imageBytes);
+        } catch (Exception e) {
+            log.warn("이미지 압축 중 오류 발생: {}", imageUrl, e);
+            return null;
+        }
+    }
+
+    // URL 확장자를 기반으로 MimeType 판별
+    private MimeType resolveMimeType(String url) {
+        String lowerUrl = url.toLowerCase();
+        if (lowerUrl.endsWith(".png")) return MimeTypeUtils.IMAGE_PNG;
+        if (lowerUrl.endsWith(".gif")) return MimeTypeUtils.IMAGE_GIF;
+        if (lowerUrl.endsWith(".webp")) return MimeType.valueOf("image/webp");
+        return MimeTypeUtils.IMAGE_JPEG; // 기본값
     }
     
     private int saveStory(AiStoryRequest request, String content, String memberId) {
@@ -133,19 +256,35 @@ public class StoryServiceImpl implements StoryService {
     private String buildUserContext(AiStoryRequest request) {
         StringBuilder sb = new StringBuilder();
         sb.append("여행 제목: ").append(request.getStoryTitle()).append("\n");
-        sb.append("기간: ").append(request.getStartDate()).append(" ~ ").append(request.getEndDate()).append("\n");
+        sb.append("기간: ").append(request.getStartDate()).append(" ~ ").append(request.getEndDate()).append("\n\n");
         
-        for (AiStoryRequest.DayDto day : request.getStoryDays()) {
-            sb.append("[Day ").append(day.getDayNum()).append("]\n");
-            sb.append("날씨").append(String.join(", ", day.getWeather())).append("\n");
-            for (AiStoryRequest.SectionDto section : day.getSections()) {
-                sb.append("- 장소: ").append(section.getPlaceName()).append("\n");
-                sb.append("  간단 메모: ").append(section.getContent()).append("\n");
-                if (section.getSelectedTags() != null && !section.getSelectedTags().isEmpty()) {
-                    sb.append("  분위기 태그: ").append(String.join(", ", section.getSelectedTags())).append("\n");
+        if (request.getStoryDays() != null) {
+            for (AiStoryRequest.DayDto day : request.getStoryDays()) {
+                sb.append("## Day ").append(day.getDayNum()).append(" (").append(day.getDate()).append(")\n");
+                
+                String weatherStr = (day.getWeather() != null) ? String.join(", ", day.getWeather()) : "정보 없음";
+                sb.append("- 날씨: ").append(weatherStr).append("\n\n");
+                
+                if (day.getSections() != null) {
+                    for (AiStoryRequest.SectionDto section : day.getSections()) {
+                        sb.append("### 장소: ").append(section.getPlaceName()).append("\n");
+                        sb.append("  - 메모: ").append(section.getContent()).append("\n");
+                        
+                        if (section.getSelectedTags() != null && !section.getSelectedTags().isEmpty()) {
+                            sb.append("  - 태그(감정/분위기): ").append(String.join(", ", section.getSelectedTags())).append("\n");
+                        }
+                        
+                        if (section.getImageUrls() != null && !section.getImageUrls().isEmpty()) {
+                            // AI가 이미지를 인용할 수 있도록 URL을 명시적으로 제공
+                            sb.append("  - [이미지 소스]: ").append(String.join(", ", section.getImageUrls())).append("\n");
+                        } else {
+                            sb.append("  - [이미지 소스]: 없음\n");
+                        }
+                        sb.append("\n");
+                    }
                 }
+                sb.append("---\n");
             }
-            sb.append("\n");
         }
         return sb.toString();
     }

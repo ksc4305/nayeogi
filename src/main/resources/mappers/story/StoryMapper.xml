@@ -26,11 +26,11 @@
 	<update id="updateStory">
 		UPDATE storybooks
 		SET 
-			title = #{title},
-			content = #{content},
-			thumbnail_path = #{thumbnailPath},
-			is_public = #{isPublic}
-		WHERE id = #{storyId} AND member_id = #{memberId}
+			title = #{request.title},
+			content = #{request.content},
+			thumbnail_path = #{request.thumbnailPath},
+			is_public = #{request.isPublic}
+		WHERE id = #{storyId}
 	</update>
 	
 	<update id="updateStoryVisibility">
