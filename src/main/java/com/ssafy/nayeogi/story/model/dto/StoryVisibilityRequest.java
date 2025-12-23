@@ -1,5 +1,7 @@
 package com.ssafy.nayeogi.story.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class StoryVisibilityRequest {
 
     @Schema(description = "변경할 공개 여부 (true: 공개, false: 비공개)", example = "true")
+    @JsonProperty("isPublic")
     private boolean isPublic;
 
 }

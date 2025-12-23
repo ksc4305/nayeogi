@@ -7,10 +7,10 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-@Schema(description = "스토리북 상세 조회 응답 DTO")
+@Schema(description = "스토리 상세 조회 응답 DTO")
 public class StoryDetailResponse {
     
-    @Schema(description = "스토리북 ID", example = "501")
+    @Schema(description = "스토리 ID", example = "501")
     private int storyId;
     
     @Schema(description = "여행 계획 ID", example = "101")
@@ -27,7 +27,6 @@ public class StoryDetailResponse {
     
     @Schema(description = "작성자 이름", example = "김싸피")
     private String writerName;
-    
     
     @Schema(description = "생성일", example = "2025-11-27")
     private String createdDate;

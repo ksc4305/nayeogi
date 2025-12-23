@@ -57,7 +57,7 @@ public class StoryServiceImpl implements StoryService {
     @Value("classpath:/prompts/test.txt")
     private Resource systemPrompt;
 
-    // AI 분석에 사용할 최대 이미지 수 (안전하게 6장 제한)
+    // AI 분석에 사용할 최대 이미지 수 (안전하게 8장 제한)
     private static final int MAX_TOTAL_ANALYSIS_IMAGES = 8;
     // AI Vision 모델 표준 입력 크기 근사치 (224~256px이면 분석 충분, 용량 최소화)
     private static final int TARGET_IMAGE_WIDTH = 256; 
