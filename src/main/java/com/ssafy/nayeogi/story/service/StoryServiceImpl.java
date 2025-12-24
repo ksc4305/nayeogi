@@ -279,6 +279,14 @@ public class StoryServiceImpl implements StoryService {
                 if (day.getSections() != null) {
                     for (AiStoryRequest.SectionDto section : day.getSections()) {
                         sb.append("### 장소: ").append(section.getPlaceName()).append("\n");
+                        
+                        if (section.getCategory() != null && !section.getCategory().isEmpty()) {
+                            sb.append("  - 카테고리: ").append(section.getCategory()).append("\n");
+                        }
+                        if (section.getLocation() != null && !section.getLocation().isEmpty()) {
+                            sb.append("  - 위치: ").append(section.getLocation()).append("\n");
+                        }
+                        
                         sb.append("  - 메모: ").append(section.getContent()).append("\n");
                         
                         if (section.getSelectedTags() != null && !section.getSelectedTags().isEmpty()) {

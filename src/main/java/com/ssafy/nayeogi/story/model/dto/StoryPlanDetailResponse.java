@@ -25,5 +25,7 @@ public class StoryPlanDetailResponse {
     public static class AttractionDto {
         private int id;
         private String title;
+        private Integer contentTypeId;
+        private String address;
     }
 }

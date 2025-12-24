@@ -56,6 +56,12 @@ public class AiStoryRequest {
         @Schema(description = "장소 이름", example = "제주국제공항")
         private String placeName;
 
+        @Schema(description = "장소 카테고리 (예: 관광지, 식당)", example = "관광지")
+        private String category;
+
+        @Schema(description = "장소 위치 (주소)", example = "제주 제주시")
+        private String location;
+
         @Schema(description = "방문 순서", example = "1")
         private int visitOrder;
 

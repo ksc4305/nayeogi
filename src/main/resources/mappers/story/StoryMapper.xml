@@ -98,6 +98,8 @@
         <association property="attraction" javaType="com.ssafy.nayeogi.story.model.dto.StoryPlanDetailResponse$AttractionDto">
             <id property="id" column="attraction_id"/>
             <result property="title" column="attraction_title"/>
+            <result property="contentTypeId" column="content_type_id"/>
+            <result property="address" column="addr1"/>
         </association>
     </collection>
 </resultMap>
@@ -112,7 +114,9 @@
         pd.plan_date,
         pd.sequence,
         a.id as attraction_id,
-        a.title as attraction_title
+        a.title as attraction_title,
+        a.content_type_id,
+        a.addr1
     FROM
         plans p
     LEFT JOIN
