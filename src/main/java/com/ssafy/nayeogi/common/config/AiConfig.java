@@ -44,7 +44,8 @@ public class AiConfig {
     @ConditionalOnProperty(name = "app.ai.provider", havingValue = "gemini")
     ChatModel googleGenAiChatModel(
             @Value("${spring.ai.google.genai.api-key}") String apiKey,
-            @Value("${spring.ai.google.genai.base-url}") String baseUrl) {
+            @Value("${spring.ai.google.genai.base-url}") String baseUrl,
+            @Value("${spring.ai.google.genai.chat.options.model}") String model) {
 
         Client client = Client.builder()
                 .apiKey(apiKey)
@@ -54,9 +55,8 @@ public class AiConfig {
         return GoogleGenAiChatModel.builder()
                 .genAiClient(client)
                 .defaultOptions(GoogleGenAiChatOptions.builder()
-                        .model("gemini-2.0-flash")
+                        .model(model)
                         .temperature(0.7)
-                        .maxOutputTokens(1500)
                         .build())
                 .build();
     }

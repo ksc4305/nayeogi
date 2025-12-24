@@ -19,6 +19,12 @@ public class AiStoryRequest {
     @Schema(description = "여행 종료일", example = "2024-05-13")
     private String endDate;
 
+    @Schema(description = "여행 기간 (예: 2박 3일)", example = "2박 3일")
+    private String duration;
+
+    @Schema(description = "여행 계절 (예: 봄, 여름)", example = "봄")
+    private String season;
+
     @Schema(description = "동반자 목록", example = "[\"friends\"]")
     private List<String> companions;
 

@@ -84,13 +84,14 @@ public class StoryServiceImpl implements StoryService {
         
         // 2. AI에게 전달할 유저 메시지(여행 정보) 구성
         String userContext = buildUserContext(request);
+        log.debug(">> AI 생성 user 요청 정보 - [{}]", userContext);
 
         // 3. 이미지 리스트 추출 및 초경량 압축 (Vision 기능 활용)
         List<Media> mediaList = extractAllImagesAsMedia(request);
         log.info(">> AI 분석 요청 컨텐츠 구성 완료 (텍스트 길이: {}, 분석 이미지: {}개)", userContext.length(), mediaList.size());
 
         // AI 호출
-        log.info("AI 스토리 생성 시작 (Gemini Multimodal)...");
+        log.info("AI 스토리 생성 시작 (Multimodal)...");
         return chatClient.prompt()
                 .system(sp -> sp.text(systemPrompt)
                         .params(Map.of("tones", finalTones, "companions", finalCompanions)))
@@ -256,7 +257,17 @@ public class StoryServiceImpl implements StoryService {
     private String buildUserContext(AiStoryRequest request) {
         StringBuilder sb = new StringBuilder();
         sb.append("여행 제목: ").append(request.getStoryTitle()).append("\n");
-        sb.append("기간: ").append(request.getStartDate()).append(" ~ ").append(request.getEndDate()).append("\n\n");
+        sb.append("기간: ").append(request.getStartDate()).append(" ~ ").append(request.getEndDate());
+
+        if (request.getDuration() != null && !request.getDuration().isEmpty()) {
+             sb.append(" (").append(request.getDuration()).append(")");
+        }
+        sb.append("\n");
+
+        if (request.getSeason() != null && !request.getSeason().isEmpty()) {
+            sb.append("계절: ").append(request.getSeason()).append("\n");
+        }
+        sb.append("\n");
         
         if (request.getStoryDays() != null) {
             for (AiStoryRequest.DayDto day : request.getStoryDays()) {
