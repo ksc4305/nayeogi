@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.content.Media;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -57,19 +58,40 @@ public class StoryServiceImpl implements StoryService {
     @Value("classpath:/prompts/test.txt")
     private Resource systemPrompt;
 
-    // AI 분석에 사용할 최대 이미지 수 (안전하게 8장 제한)
-    private static final int MAX_TOTAL_ANALYSIS_IMAGES = 8;
+    // AI 분석에 사용할 최대 이미지 수 (안전하게 6장 제한)
+    private static final int MAX_TOTAL_ANALYSIS_IMAGES = 6;
     // AI Vision 모델 표준 입력 크기 근사치 (224~256px이면 분석 충분, 용량 최소화)
     private static final int TARGET_IMAGE_WIDTH = 256; 
     
     @Override
     public int generateAndSaveStory(AiStoryRequest request, String memberId) {
+        log.info(">> [성능 측정 시작] 스토리 생성 프로세스 개시");
+        long processStartTime = System.currentTimeMillis();
         
         // 1. AI 컨텐츠 생성 (시간이 오래 걸림, DB 트랜잭션 없이 실행)
+        long aiStartTime = System.currentTimeMillis();
         String generatedContent = generateAiContent(request);
+        long aiEndTime = System.currentTimeMillis();
+        long aiDuration = aiEndTime - aiStartTime;
 
         // 2. DB 저장 (순식간에 끝남, 여기서만 트랜잭션 실행)
-        return saveStory(request, generatedContent, memberId);
+        long dbStartTime = System.currentTimeMillis();
+        int storyId = saveStory(request, generatedContent, memberId);
+        long dbEndTime = System.currentTimeMillis();
+        long dbDuration = dbEndTime - dbStartTime;
+        
+        long totalDuration = System.currentTimeMillis() - processStartTime;
+
+        log.info("============================================================");
+        log.info(">> [성능 측정 결과 리포트]");
+        log.info(">> 1. AI 생성 소요 시간 (DB 비점유): {} ms", aiDuration);
+        log.info(">> 2. DB 저장 소요 시간 (DB 점유): {} ms", dbDuration);
+        log.info(">> 3. 전체 프로세스 시간: {} ms", totalDuration);
+        log.info(">> * 최적화 성과: 전체 시간 중 DB 점유율 약 {}%", 
+                String.format("%.2f", (double)dbDuration / totalDuration * 100));
+        log.info("============================================================");
+
+        return storyId;
     }
     
     private String generateAiContent(AiStoryRequest request) {
@@ -92,39 +114,74 @@ public class StoryServiceImpl implements StoryService {
 
         // AI 호출
         log.info("AI 스토리 생성 시작 (Multimodal)...");
-        return chatClient.prompt()
+        ChatResponse response = chatClient.prompt()
                 .system(sp -> sp.text(systemPrompt)
                         .params(Map.of("tones", finalTones, "companions", finalCompanions)))
                 .user(u -> u.text(userContext).media(mediaList.toArray(new Media[0])))
                 .call()
-                .content();
+                .chatResponse();
+
+        if (response != null && response.getMetadata() != null && response.getMetadata().getUsage() != null) {
+            var usage = response.getMetadata().getUsage();
+            log.info(">> [AI 토큰 사용량 결과]");
+            log.info(">> - 입력(Prompt) 토큰: {}", usage.getPromptTokens());
+            log.info(">> - 출력(Completion) 토큰: {}", usage.getCompletionTokens());
+            log.info(">> - 전체(Total) 토큰: {}", usage.getTotalTokens());
+            log.info(">> * 이미지 최적화를 통해 입력 토큰 비용을 대폭 절감했습니다.");
+        }
+
+        return (response != null && response.getResult() != null) 
+                ? response.getResult().getOutput().getText() 
+                : "";
     }
 
     // 모든 이미지 URL을 Media 객체로 변환 (리사이징 및 개수 제한 적용)
+    // 개선된 로직: 각 장소(Section)의 첫 번째 사진을 우선순위로 수집 (Round-Robin 방식)
     private List<Media> extractAllImagesAsMedia(AiStoryRequest request) {
         List<Media> mediaList = new ArrayList<>();
-        List<String> allImageUrls = new ArrayList<>();
+        List<String> selectedUrls = new ArrayList<>();
         
-        // 1. 일단 모든 이미지 URL 수집
+        // 1. 모든 섹션의 이미지 리스트를 수집
+        List<List<String>> allSectionsImages = new ArrayList<>();
         if (request.getStoryDays() != null) {
             for (var day : request.getStoryDays()) {
                 if (day.getSections() != null) {
                     for (var section : day.getSections()) {
-                        if (section.getImageUrls() != null) {
-                            allImageUrls.addAll(section.getImageUrls());
+                        if (section.getImageUrls() != null && !section.getImageUrls().isEmpty()) {
+                            allSectionsImages.add(section.getImageUrls());
                         }
                     }
                 }
             }
         }
+
+        // 2. Round-Robin 방식으로 이미지 선택
+        // (각 장소의 1번 사진들 -> 각 장소의 2번 사진들 -> ... 순서)
+        int maxDepth = 0;
+        for (List<String> images : allSectionsImages) {
+            maxDepth = Math.max(maxDepth, images.size());
+        }
+
+        for (int depth = 0; depth < maxDepth; depth++) {
+            for (List<String> sectionImages : allSectionsImages) {
+                if (depth < sectionImages.size()) {
+                    selectedUrls.add(sectionImages.get(depth));
+                    
+                    if (selectedUrls.size() >= MAX_TOTAL_ANALYSIS_IMAGES) {
+                        break;
+                    }
+                }
+            }
+            if (selectedUrls.size() >= MAX_TOTAL_ANALYSIS_IMAGES) {
+                break;
+            }
+        }
         
-        // 2. 최대 개수만큼 앞에서부터 자르기 (또는 고르게 분포시킬 수도 있음, 현재는 순차적)
-        // 장소가 1곳이어도 그곳의 사진을 최대 개수만큼 분석함
-        int targetCount = Math.min(allImageUrls.size(), MAX_TOTAL_ANALYSIS_IMAGES);
-        
+        log.info(">> [이미지 선별 로직(Round-Robin)] 총 {}개 후보 중 {}개 선별 완료 (여행 전 구간 분포)", 
+                allSectionsImages.stream().mapToInt(List::size).sum(), selectedUrls.size());
+
         // 3. 압축 및 변환
-        for (int i = 0; i < targetCount; i++) {
-            String url = allImageUrls.get(i);
+        for (String url : selectedUrls) {
             try {
                 Resource compressedImage = compressImage(url);
                 if (compressedImage != null) {
@@ -143,7 +200,11 @@ public class StoryServiceImpl implements StoryService {
         try (InputStream is = new URL(imageUrl).openStream();
              ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             
-            BufferedImage originalImage = ImageIO.read(is);
+            // 압축 전 원본 크기 가늠을 위한 스트림 복사 (측정용)
+            byte[] originalBytes = is.readAllBytes();
+            int originalSize = originalBytes.length;
+
+            BufferedImage originalImage = ImageIO.read(new java.io.ByteArrayInputStream(originalBytes));
             if (originalImage == null) return null;
 
             // 1. 해상도 조절 (가로 256px 기준 비율 유지) - AI 인식엔 충분
@@ -174,10 +235,13 @@ public class StoryServiceImpl implements StoryService {
                 writer.dispose();
             }
             
-            byte[] imageBytes = baos.toByteArray();
-            log.debug("이미지 초경량 압축 완료: {} -> {} bytes", imageUrl, imageBytes.length);
+            byte[] compressedBytes = baos.toByteArray();
+            int compressedSize = compressedBytes.length;
             
-            return new ByteArrayResource(imageBytes);
+            log.info(">> [이미지 최적화 결과] 원본: {} bytes -> 압축: {} bytes (절감률: {}%)", 
+                    originalSize, compressedSize, String.format("%.2f", (1 - (double)compressedSize / originalSize) * 100));
+            
+            return new ByteArrayResource(compressedBytes);
         } catch (Exception e) {
             log.warn("이미지 압축 중 오류 발생: {}", imageUrl, e);
             return null;
