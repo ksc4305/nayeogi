@@ -271,7 +271,7 @@ public class StoryServiceImpl implements StoryService {
         
         if (request.getStoryDays() != null) {
             for (AiStoryRequest.DayDto day : request.getStoryDays()) {
-                sb.append("## Day ").append(day.getDayNum()).append(" (").append(day.getDate()).append(")\n");
+                sb.append("## Day ").append(day.getDayNum()).append("\n");
                 
                 String weatherStr = (day.getWeather() != null) ? String.join(", ", day.getWeather()) : "정보 없음";
                 sb.append("- 날씨: ").append(weatherStr).append("\n\n");
